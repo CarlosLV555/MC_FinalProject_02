@@ -18,7 +18,7 @@
         android:textSize="30sp"
         android:text="Memito"
         android:textColor="@color/black"
-        android:background="@color/LightCoral"
+        android:background="@color/white"
         android:gravity="center_horizontal" />
     <ImageButton
         android:id="@+id/fab"
