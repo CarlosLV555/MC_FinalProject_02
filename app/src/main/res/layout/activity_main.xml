@@ -17,7 +17,7 @@
         android:layout_height="wrap_content"
         android:textSize="30sp"
         android:text="Memito"
-        android:textColor="@color/white"
+        android:textColor="@color/black"
         android:background="@color/LightCoral"
         android:gravity="center_horizontal" />
     <ImageButton
