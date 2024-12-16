@@ -5,5 +5,14 @@
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
     </style>
 
+    <!-- Main Theme -->
     <style name="Theme.MapApp" parent="Base.Theme.MapApp" />
+
+    <!-- Splash Screen Theme -->
+    <style name="Theme.SplashScreen" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Background color or drawable for splash screen -->
+        <item name="android:windowBackground">@color/white</item> <!-- Replace with your desired color -->
+        <!-- Optional: Use a drawable as the background -->
+        <!-- <item name="android:windowBackground">@drawable/splash_screen_background</item> -->
+    </style>
 </resources>
