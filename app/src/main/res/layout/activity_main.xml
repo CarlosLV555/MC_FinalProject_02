@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:padding="10dp">
     <fragment xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
@@ -16,7 +16,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="30sp"
-        android:text="Memito"
+        android:text="Dresden"
         android:textColor="@color/white"
         android:background="@color/LightCoral"
         android:gravity="center_horizontal" />
@@ -25,7 +25,7 @@
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_alignParentRight="true"
-        android:layout_alignParentBottom="true"
+        android:layout_above="@id/btm_nav"
         android:src="@drawable/list_scaled"
         android:background="@drawable/button_background"
         android:onClick="onClickStartSecondActivity"
@@ -33,4 +33,16 @@
         android:adjustViewBounds="true"
         android:padding="12dp"
         android:layout_margin="10dp" />
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/btm_nav"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/LightCoral"
+        android:layout_alignParentBottom="true"
+        app:menu="@menu/btm_nav_items" />
+    <RelativeLayout
+        android:id="@+id/rel_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/btm_nav" />
 </RelativeLayout>

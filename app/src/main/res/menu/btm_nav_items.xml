@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/cluster"
+        android:title="Clustering"
+        android:icon="@drawable/icon_cluster" />
+    <item
+        android:id="@+id/heatmap"
+        android:title="Heat Map"
+        android:icon="@drawable/icon_heatmap"/>
+</menu>
