@@ -1,8 +1,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.MapApp" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="android:statusBarColor">@color/Background</item>
     </style>
 
     <!-- Main Theme -->
@@ -11,8 +10,7 @@
     <!-- Splash Screen Theme -->
     <style name="Theme.SplashScreen" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Background color or drawable for splash screen -->
-        <item name="android:windowBackground">@color/white</item> <!-- Replace with your desired color -->
-        <!-- Optional: Use a drawable as the background -->
-        <!-- <item name="android:windowBackground">@drawable/splash_screen_background</item> -->
+        <item name="android:windowBackground">@color/white</item>
+        <item name="android:statusBarColor">@color/Background</item>
     </style>
 </resources>

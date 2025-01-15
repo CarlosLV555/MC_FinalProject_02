@@ -4,4 +4,8 @@
     <color name="white">#FFFFFFFF</color>
     <color name="LightCoral">#E38484</color>
     <color name="Background">#385b3a</color>
+    <color name="yellow">#F3A029</color>
+    <color name="brown">#987E34</color>
+    <color name="red">#EE3927</color>
+
 </resources>
