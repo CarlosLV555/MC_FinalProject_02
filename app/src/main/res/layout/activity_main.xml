@@ -18,7 +18,7 @@
         android:textSize="30sp"
         android:text="Dresden"
         android:textColor="@color/white"
-        android:background="@color/LightCoral"
+        android:background="@color/Background"
         android:gravity="center_horizontal" />
     <ImageButton
         android:id="@+id/fab"
@@ -37,7 +37,7 @@
         android:id="@+id/btm_nav"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/LightCoral"
+        android:background="@color/Background"
         android:layout_alignParentBottom="true"
         app:menu="@menu/btm_nav_items" />
     <RelativeLayout
