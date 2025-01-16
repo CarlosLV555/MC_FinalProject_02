@@ -2,6 +2,7 @@ package com.example.finalproject_wjc;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -174,6 +175,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
     @SuppressLint("MissingPermission")
     @RequiresApi(api = Build.VERSION_CODES.N)
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -234,6 +236,13 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                     }
                 }
         );
+
+        // Add FAB button functionality
+        View fab = findViewById(R.id.fab); // Ensure your button ID matches "fab"
+        fab.setOnClickListener(view -> {
+            // Start the ListActivity
+            startActivity(new Intent(MainActivity.this, ListActivity.class));
+        });
     }
 
     @Override

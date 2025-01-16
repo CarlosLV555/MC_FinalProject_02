@@ -1,13 +1,23 @@
-<RelativeLayout
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/main"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/empty_message"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="No data available (yet)"
+        android:visibility="gone"
+        android:textSize="18sp"
+        android:textColor="@color/black" />
 
     <ListView
-        android:id="@+id/myListView"
+        android:id="@+id/list_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="16dp"
-        android:background="#FFFFFF" />
-</RelativeLayout>
+        android:layout_height="match_parent" />
+</LinearLayout>
