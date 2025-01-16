@@ -50,6 +50,9 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     BottomNavigationView bottomNavigationView;
 
     private GoogleMap mMap;
+
+    private CameraPosition lastCameraPosition;
+
     ActivityResultLauncher<String[]> locationPermissionRequest;
 
     static List<MuseumGalleryItem> dd_mus_gal = Arrays.asList(
@@ -165,19 +168,23 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
             new MuseumGalleryItem(51.05137474, 13.73382926, "art'SAP Dresden", "www.facebook.com/ArtSAPDD/"),
             new MuseumGalleryItem(51.08130072, 13.76039225, "Zeitenströmung", "www.zeitenstroemung.de"),
             new MuseumGalleryItem(51.03941885, 13.7051948, "Galerie kraussERBEN", ""),
-            new MuseumGalleryItem(51.05619497, 13.73315174, "Sächsischer Landtag", "www.landtag.sachsen.de/de/index.aspx"));
+            new MuseumGalleryItem(51.05619497, 13.73315174, "Sächsischer Landtag", "www.landtag.sachsen.de/de/index.aspx")
+    );
 
 
     @SuppressLint("MissingPermission")
     @RequiresApi(api = Build.VERSION_CODES.N)
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        BottomNavigationView bottomNavigationView = findViewById(R.id.btm_nav);
+        bottomNavigationView = findViewById(R.id.btm_nav);
 
+        // Clear any selected item in BottomNavigationView immediately after it's created
+        bottomNavigationView.setSelectedItemId(-1); // Clear any selection
+
+        // Now set the item selection listener
         bottomNavigationView.setOnItemSelectedListener(item -> {
             Fragment fragment = null;
 
@@ -188,6 +195,13 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
             }
 
             if (fragment != null) {
+                // Update the camera position before switching fragments
+                if (fragment instanceof ClusterFragment) {
+                    ((ClusterFragment) fragment).setLastCameraPosition(lastCameraPosition);
+                } else if (fragment instanceof HeatmapFragment) {
+                    ((HeatmapFragment) fragment).setLastCameraPosition(lastCameraPosition);
+                }
+
                 getSupportFragmentManager()
                         .beginTransaction()
                         .replace(R.id.map, fragment)
@@ -197,11 +211,14 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
             return true;
         });
 
+        // Your existing map fragment setup
         SupportMapFragment mapFragment = (SupportMapFragment)
                 getSupportFragmentManager().findFragmentById(R.id.map);
+        if (mapFragment != null) {
+            mapFragment.getMapAsync(this);
+        }
 
-        mapFragment.getMapAsync(this);
-
+        // Location permission setup
         locationPermissionRequest = registerForActivityResult(
                 new ActivityResultContracts.RequestMultiplePermissions(), result -> {
                     Boolean fineLocationGranted = result.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false);
@@ -269,6 +286,10 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                 Manifest.permission.ACCESS_COARSE_LOCATION
         };
         locationPermissionRequest.launch(PERMISSIONS);
+
+        mMap.setOnCameraIdleListener(() -> {
+            lastCameraPosition = mMap.getCameraPosition();
+        });
     }
 
     private class DownloadGeoJsonFile extends AsyncTask<String, Void, GeoJsonLayer> {
@@ -313,5 +334,4 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         }
 
     }
-
 }

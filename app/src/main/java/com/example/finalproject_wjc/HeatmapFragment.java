@@ -15,6 +15,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MapStyleOptions;
@@ -28,73 +29,60 @@ import java.util.List;
 public class HeatmapFragment extends Fragment {
 
     private GoogleMap mMap;
+    private CameraPosition lastCameraPosition;
 
-    // Pass map object from the MainActivity to this Fragment
-    public void setMap(GoogleMap map) {
-        mMap = map;
-        applyMapStyle();
-    }
+    private OnMapReadyCallback callback = googleMap -> {
 
-    private void applyMapStyle() {
-        if (mMap != null) {
-            // Apply your custom style to the map
-            mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(getContext(), R.raw.map_style));
+        mMap = googleMap;
+
+        // Apply the custom map style
+        mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireContext(), R.raw.map_style));
+
+        mMap.getUiSettings().setZoomControlsEnabled(false);
+        mMap.getUiSettings().setMyLocationButtonEnabled(true);
+
+        // Prepare heatmap colors and gradient
+        int[] colors = {
+                Color.rgb(244, 242, 105), // Yellow
+                Color.rgb(92, 178, 112)  // Green
+        };
+        float[] startPoints = {0.2f, 1f};
+        Gradient gradient = new Gradient(colors, startPoints);
+
+        // Create LatLngBounds and LatLng list for the heatmap
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+        List<LatLng> latLngList = new ArrayList<>();
+
+        for (MuseumGalleryItem item : MainActivity.dd_mus_gal) {
+            LatLng position = new LatLng(
+                    item.getPosition().latitude,
+                    item.getPosition().longitude
+            );
+            latLngList.add(position);
+            builder.include(position);
         }
-    }
 
-    private OnMapReadyCallback callback = new OnMapReadyCallback() {
-
-        /**
-         * Manipulates the map once available.
-         * This callback is triggered when the map is ready to be used.
-         * This is where we can add markers or lines, add listeners or move the camera.
-         * In this case, we just add a marker near Sydney, Australia.
-         * If Google Play services is not installed on the device, the user will be prompted to
-         * install it inside the SupportMapFragment. This method will only be triggered once the
-         * user has installed Google Play services and returned to the app.
-         */
-        @Override
-        public void onMapReady(GoogleMap map) {
-
-            int[] colors = {
-                    Color.rgb(244, 242, 105),
-                    Color.rgb(92, 178, 112)
-            };
-            float[] startPoints = {
-                    0.2f, 1f
-            };
-            Gradient gradient = new Gradient(colors, startPoints);
-
-
-
-            LatLngBounds.Builder builder = new LatLngBounds.Builder();
-
-            for (int i = 0; i < MainActivity.dd_mus_gal.size(); i++) {
-                builder.include(new LatLng(
-                        MainActivity.dd_mus_gal.get(i).getPosition().latitude,
-                        MainActivity.dd_mus_gal.get(i).getPosition().longitude)
-                );
-            }
-
-            map.moveCamera(CameraUpdateFactory.newLatLngBounds(builder.build(), 100));
-
-            List<LatLng> latLngList = new ArrayList<>();
-            for (int i = 0; i < MainActivity.dd_mus_gal.size(); i++) {
-                latLngList.add(new LatLng(
-                        MainActivity.dd_mus_gal.get(i).getPosition().latitude,
-                        MainActivity.dd_mus_gal.get(i).getPosition().longitude
-                ));
-            }
-
-            HeatmapTileProvider provider = new HeatmapTileProvider.Builder()
-                    .gradient(gradient)
-                    .opacity(0.8)
-                    .radius(30)
-                    .data(latLngList)
-                    .build();
-            map.addTileOverlay(new TileOverlayOptions().tileProvider(provider));
+        // Move the camera to the last known position or fit to the bounds
+        if (lastCameraPosition != null) {
+            mMap.moveCamera(CameraUpdateFactory.newCameraPosition(lastCameraPosition));
+        } else if (!latLngList.isEmpty()) {
+            mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(builder.build(), 100));
         }
+
+        // Create the heatmap provider and overlay
+        HeatmapTileProvider provider = new HeatmapTileProvider.Builder()
+                .gradient(gradient)
+                .opacity(0.8) // Adjust opacity as needed
+                .radius(30)   // Adjust radius as needed
+                .data(latLngList)
+                .build();
+
+        mMap.addTileOverlay(new TileOverlayOptions().tileProvider(provider));
     };
+
+    public void setLastCameraPosition(CameraPosition cameraPosition) {
+        lastCameraPosition = cameraPosition;
+    }
 
     @Nullable
     @Override

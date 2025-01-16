@@ -39,6 +39,8 @@
         android:layout_height="wrap_content"
         android:background="@color/Background"
         android:layout_alignParentBottom="true"
+        app:itemIconTint="@color/white"
+        app:itemTextColor="@color/white"
         app:menu="@menu/btm_nav_items" />
     <RelativeLayout
         android:id="@+id/rel_layout"
