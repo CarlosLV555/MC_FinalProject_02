@@ -1,5 +1,6 @@
 package com.example.finalproject_wjc;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -41,6 +42,7 @@ public class ClusterFragment extends Fragment {
         dbHelper = new DatabaseHelper(requireContext());
     }
 
+    @SuppressLint("PotentialBehaviorOverride")
     private OnMapReadyCallback callback = googleMap -> {
 
         mMap = googleMap;
@@ -99,7 +101,7 @@ public class ClusterFragment extends Fragment {
 
             clusterManager.cluster();
 
-            if (clusterManager.getAlgorithm().getItems().size() > 0) {
+            if (!clusterManager.getAlgorithm().getItems().isEmpty()) {
                 LatLngBounds bounds = builder.build();
                 CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(bounds, 100);
                 mMap.moveCamera(cameraUpdate);

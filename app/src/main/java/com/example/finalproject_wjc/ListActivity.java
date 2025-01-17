@@ -2,24 +2,31 @@ package com.example.finalproject_wjc;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.location.Location;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.io.IOException;
 
 public class ListActivity extends AppCompatActivity {
     static DatabaseHelper dbHelper;
+    private FusedLocationProviderClient fusedLocationClient;
+    private double userLat, userLng;
 
     @SuppressLint("Range")
     @Override
@@ -38,6 +45,32 @@ public class ListActivity extends AppCompatActivity {
         ListView listView = findViewById(R.id.list_view);
         TextView emptyMessage = findViewById(R.id.empty_message);
 
+        // Initialize location client
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
+        // Get current location
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                    @Override
+                    public void onSuccess(Location location) {
+                        if (location != null) {
+                            userLat = location.getLatitude();
+                            userLng = location.getLongitude();
+                            loadListView();
+                        }
+                    }
+                });
+
         // Initialize database
         dbHelper = new DatabaseHelper(this);
         try {
@@ -45,11 +78,17 @@ public class ListActivity extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void loadListView() {
         SQLiteDatabase database = dbHelper.getDataBase();
 
         // Query data from the database
         Cursor dbCursor = database.rawQuery("SELECT * FROM MobCartoDB_table;", null);
         int length = dbCursor.getCount();
+        ListView listView = findViewById(R.id.list_view);
+        TextView emptyMessage = findViewById(R.id.empty_message);
+
         if (length == 0) {
             emptyMessage.setVisibility(View.VISIBLE);
             listView.setVisibility(View.GONE);
@@ -60,16 +99,36 @@ public class ListActivity extends AppCompatActivity {
         }
 
         String[] db_names = new String[length];
+        String[] distances = new String[length];
         final Cursor finalCursor = dbCursor;
 
         dbCursor.moveToFirst();
         for (int i = 0; i < length; i++) {
-            db_names[i] = dbCursor.getString(dbCursor.getColumnIndex("name")); // Adjust column name
+            String name = dbCursor.getString(dbCursor.getColumnIndexOrThrow("name"));
+            double lat = dbCursor.getDouble(dbCursor.getColumnIndexOrThrow("lat"));
+            double lng = dbCursor.getDouble(dbCursor.getColumnIndexOrThrow("lng"));
+
+            // Calculate the distance from the user's current location
+            Location pointLocation = new Location("point");
+            pointLocation.setLatitude(lat);
+            pointLocation.setLongitude(lng);
+
+            Location userLocation = new Location("user");
+            userLocation.setLatitude(userLat);
+            userLocation.setLongitude(userLng);
+
+            float distance = userLocation.distanceTo(pointLocation); // Distance in meters
+
+            String distanceText = (distance < 1000) ? distance + " meters" : String.format("%.2f", distance / 1000) + " km";
+
+            db_names[i] = name;  // Only the name in the name array
+            distances[i] = distanceText;  // Distance in the distances array
             dbCursor.moveToNext();
         }
         dbCursor.moveToFirst(); // Reset cursor
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, db_names);
+        // Use CustomAdapter
+        CustomAdapter adapter = new CustomAdapter(this, db_names, distances);
         listView.setAdapter(adapter);
 
         // Set item click listener
