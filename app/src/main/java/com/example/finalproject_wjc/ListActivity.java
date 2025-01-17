@@ -1,5 +1,8 @@
 package com.example.finalproject_wjc;
 
+import android.annotation.SuppressLint;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -12,15 +15,16 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
 
 public class ListActivity extends AppCompatActivity {
+    @SuppressLint("StaticFieldLeak")
+    static DatabaseHelper dbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
+        //EdgeToEdge.enable(this);
         setContentView(R.layout.activity_list);
 
         // Handle window insets
@@ -32,22 +36,50 @@ public class ListActivity extends AppCompatActivity {
 
         // Initialize views
         ListView listView = findViewById(R.id.list_view);
-        TextView emptyMessage = findViewById(R.id.empty_message);
+
 
         // Example data (replace this with real data or data passed via Intent)
-        List<String> data = new ArrayList<>(); // Empty list to test the "no data" message
+        dbHelper = new DatabaseHelper(this);
+        try {
+            dbHelper.createDataBase();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        SQLiteDatabase database = dbHelper.getDataBase();
 
-        // Check if data is empty
-        if (data.isEmpty()) {
-            // Show the empty message and hide the ListView
+        // Query data from the database
+        Cursor dbCursor = database.rawQuery("SELECT * FROM MobCartoDB_table;", null);
+        int length = dbCursor.getCount();
+        System.out.println("Rows fetched: " + length);
+        if (length == 0) {
+            System.out.println("No data found in the table.");
+        } else {
+            System.out.println("Data found, processing...");
+        }
+        dbCursor.moveToFirst();
+
+        String[] db_names = new String[length];
+
+        for (int i = 0; i < length; i++) {
+
+            db_names[i] = dbCursor.getString(0);
+            dbCursor.moveToNext();
+        }
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, db_names);
+
+// Toggle visibility of the empty message and ListView
+        TextView emptyMessage = findViewById(R.id.empty_message);
+        if (length == 0) {
             emptyMessage.setVisibility(View.VISIBLE);
             listView.setVisibility(View.GONE);
         } else {
-            // Hide the empty message and show the ListView with data
             emptyMessage.setVisibility(View.GONE);
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                    this, android.R.layout.simple_list_item_1, data);
-            listView.setAdapter(adapter);
+            listView.setVisibility(View.VISIBLE);
         }
+
+// Set the adapter
+        listView.setAdapter(adapter);
+        // Check if data is empty
+
     }
 }

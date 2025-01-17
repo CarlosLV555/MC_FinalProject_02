@@ -1,5 +1,7 @@
 package com.example.finalproject_wjc;
 
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -9,6 +11,7 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -24,6 +27,15 @@ public class ClusterFragment extends Fragment {
 
     private GoogleMap mMap;
     private CameraPosition lastCameraPosition;
+    private DatabaseHelper dbHelper;
+    private SQLiteDatabase database;
+    private Cursor dbCursor;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        dbHelper = new DatabaseHelper(requireContext());
+    }
 
     private OnMapReadyCallback callback = googleMap -> {
 
@@ -36,48 +48,79 @@ public class ClusterFragment extends Fragment {
         mMap.getUiSettings().setMyLocationButtonEnabled(true);
 
         // Adjust control padding after layout is rendered
-        View rootView = getView(); // Get the fragment's root view
+        View rootView = getView();
         if (rootView != null) {
-            View textView = rootView.findViewById(R.id.text_view_1); // Use fragment's view
-            View navigationBar = requireActivity().findViewById(R.id.btm_nav); // Access MainActivity's view
+            View textView = rootView.findViewById(R.id.text_view_1);
+            View navigationBar = requireActivity().findViewById(R.id.btm_nav);
 
             if (textView != null && navigationBar != null) {
                 textView.post(() -> {
-                    int topPadding = textView.getHeight(); // Height of the TextView
-                    int bottomPadding = navigationBar.getHeight(); // Height of the navigation bar
-                    int additionalBottomPadding = 150; // Optional extra space for zoom controls
+                    int topPadding = textView.getHeight();
+                    int bottomPadding = navigationBar.getHeight();
+                    int additionalBottomPadding = 150;
 
-                    // Apply padding to map controls
                     mMap.setPadding(0, topPadding, 0, bottomPadding + additionalBottomPadding);
                 });
             }
         }
 
-        ClusterManager<MuseumGalleryItem> clusterManager = new ClusterManager<>(requireContext(), mMap);
-
-        // Add points to the cluster manager and create bounds
+        ClusterManager<DatabasePoint> clusterManager = new ClusterManager<>(requireContext(), mMap);
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
-        for (int i = 0; i < MainActivity.dd_mus_gal.size(); i++) {
-            MuseumGalleryItem item = MainActivity.dd_mus_gal.get(i);
-            clusterManager.addItem(item);
-            builder.include(item.getPosition());
+
+        try {
+            dbHelper.createDataBase();
+            database = dbHelper.getDataBase();
+
+            dbCursor = database.rawQuery(
+                    "SELECT * FROM MobCartoDB_table;", null
+            );
+
+            if (dbCursor.moveToFirst()) {
+                do {
+                    double lat = dbCursor.getDouble(dbCursor.getColumnIndexOrThrow("lat"));
+                    double lng = dbCursor.getDouble(dbCursor.getColumnIndexOrThrow("lng"));
+                    String name = dbCursor.getString(dbCursor.getColumnIndexOrThrow("name"));
+                    String notes = dbCursor.getString(dbCursor.getColumnIndexOrThrow("notes"));
+
+                    DatabasePoint point = new DatabasePoint(lat, lng, name, notes);
+                    clusterManager.addItem(point);
+                    builder.include(point.getPosition());
+                }
+                while (dbCursor.moveToNext());
+            }
+
+            clusterManager.cluster();
+
+            if (clusterManager.getAlgorithm().getItems().size() > 0) {
+                LatLngBounds bounds = builder.build();
+                CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(bounds, 100);
+                mMap.moveCamera(cameraUpdate);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(requireContext(), "Error loading map points: " + e.getMessage(),
+                    Toast.LENGTH_SHORT).show();
+        } finally {
+            if (dbCursor != null && !dbCursor.isClosed()) {
+                dbCursor.close();
+            }
+            if (database != null && database.isOpen()) {
+                database.close();
+            }
         }
 
-        // Cluster the items
-        clusterManager.cluster();
-
-        // Set camera position based on bounds (if available)
-        LatLngBounds bounds = builder.build();
-        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(bounds, 100); // 100 is padding
-        mMap.moveCamera(cameraUpdate);
-
-        // Restore last camera position if it exists
         if (lastCameraPosition != null) {
             mMap.moveCamera(CameraUpdateFactory.newCameraPosition(lastCameraPosition));
         }
 
         mMap.setOnCameraIdleListener(clusterManager);
         mMap.setOnMarkerClickListener(clusterManager);
+
+        clusterManager.setOnClusterItemClickListener(item -> {
+            Toast.makeText(requireContext(), "Selected: " + item.getTitle(), Toast.LENGTH_SHORT).show();
+            return false;
+        });
     };
 
     public void setLastCameraPosition(CameraPosition cameraPosition) {
@@ -99,6 +142,17 @@ public class ClusterFragment extends Fragment {
                 (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         if (mapFragment != null) {
             mapFragment.getMapAsync(callback);
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (dbCursor != null && !dbCursor.isClosed()) {
+            dbCursor.close();
+        }
+        if (database != null && database.isOpen()) {
+            database.close();
         }
     }
 }
