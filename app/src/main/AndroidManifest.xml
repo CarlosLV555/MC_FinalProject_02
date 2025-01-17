@@ -23,7 +23,8 @@
             android:exported="true" />
         <activity
             android:name=".ClusterFragment"
-            android:exported="false" />
+            android:exported="false"
+            tools:ignore="Instantiatable" />
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
