@@ -1,17 +1,12 @@
 package com.example.finalproject_wjc;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Color;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -28,30 +23,15 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.maps.android.data.geojson.GeoJsonLayer;
-import com.google.maps.android.data.geojson.GeoJsonLineStringStyle;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
-import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 
 public class MainActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
     private CameraPosition lastCameraPosition;
-
     private ActivityResultLauncher<String[]> locationPermissionRequest;
 
     @RequiresApi(api = Build.VERSION_CODES.N)
@@ -62,7 +42,6 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
         // Initialize BottomNavigationView
         BottomNavigationView bottomNavigationView = findViewById(R.id.btm_nav);
-
         bottomNavigationView.setOnItemSelectedListener(item -> {
             Fragment fragment = null;
 
@@ -97,14 +76,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                     boolean coarseLocationGranted = result.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false);
 
                     if (fineLocationGranted || coarseLocationGranted) {
-                        if (mMap != null) {
-                            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-
-                                return;
-                            }
-                            mMap.setMyLocationEnabled(true);
-                            mMap.getUiSettings().setMyLocationButtonEnabled(true);
-                        }
+                        enableMyLocation();
                     } else {
                         Toast.makeText(this,
                                 "Location permissions are not granted.",
@@ -118,6 +90,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
             startActivity(new Intent(MainActivity.this, ListActivity.class));
         });
     }
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
@@ -127,13 +100,35 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.map_style));
         mMap.getUiSettings().setZoomControlsEnabled(false);
 
-        // Open the database and fetch markers
+        // Load markers from the database
+        loadMarkersFromDatabase();
+
+        // Request location permissions
+        locationPermissionRequest.launch(new String[]{
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+        });
+
+        // Set camera idle listener to save the last position
+        mMap.setOnCameraIdleListener(() -> lastCameraPosition = mMap.getCameraPosition());
+    }
+
+    private void enableMyLocation() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        mMap.setMyLocationEnabled(true);
+        mMap.getUiSettings().setMyLocationButtonEnabled(true);
+    }
+
+    private void loadMarkersFromDatabase() {
         SQLiteDatabase database = null;
         Cursor cursor = null;
 
         try {
             database = openOrCreateDatabase("MobCarto_SQLite.db", MODE_PRIVATE, null);
-            String query = "SELECT lat, lng, name FROM MobCartoDB_table";
+            String query = "SELECT lat, lng, name, category FROM MobCartoDB_table";
             cursor = database.rawQuery(query, null);
 
             if (cursor.moveToFirst()) {
@@ -143,12 +138,15 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                     double latitude = cursor.getDouble(cursor.getColumnIndexOrThrow("lat"));
                     double longitude = cursor.getDouble(cursor.getColumnIndexOrThrow("lng"));
                     String name = cursor.getString(cursor.getColumnIndexOrThrow("name"));
+                    String category = cursor.getString(cursor.getColumnIndexOrThrow("category"));
 
                     LatLng position = new LatLng(latitude, longitude);
+                    float color = getMarkerColor(category);
+
                     mMap.addMarker(new MarkerOptions()
                             .position(position)
                             .title(name)
-                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
+                            .icon(BitmapDescriptorFactory.defaultMarker(color)));
 
                     boundsBuilder.include(position);
                 } while (cursor.moveToNext());
@@ -168,16 +166,24 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                 database.close();
             }
         }
-
-        // Request location permissions
-        locationPermissionRequest.launch(new String[]{
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-        });
-
-        // Set camera idle listener to save last position
-        mMap.setOnCameraIdleListener(() -> lastCameraPosition = mMap.getCameraPosition());
     }
 
-
+    private float getMarkerColor(String category) {
+        switch (category) {
+            case "Bar":
+                return BitmapDescriptorFactory.HUE_RED;
+            case "Landmark":
+                return BitmapDescriptorFactory.HUE_BLUE;
+            case "Museum":
+                return BitmapDescriptorFactory.HUE_YELLOW;
+            case "Park":
+                return BitmapDescriptorFactory.HUE_GREEN;
+            case "Restaurant":
+                return BitmapDescriptorFactory.HUE_ORANGE;
+            case "Visit Point":
+                return BitmapDescriptorFactory.HUE_VIOLET;
+            default:
+                return BitmapDescriptorFactory.HUE_AZURE; // Default color
+        }
+    }
 }

@@ -1,5 +1,6 @@
 package com.example.finalproject_wjc;
 
+import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -18,10 +19,13 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.maps.android.clustering.ClusterManager;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.maps.android.clustering.view.DefaultClusterRenderer;
 
 public class ClusterFragment extends Fragment {
 
@@ -64,16 +68,17 @@ public class ClusterFragment extends Fragment {
             }
         }
 
+        // Initialize ClusterManager and CustomClusterRenderer
         ClusterManager<DatabasePoint> clusterManager = new ClusterManager<>(requireContext(), mMap);
+        clusterManager.setRenderer(new CustomClusterRenderer(requireContext(), mMap, clusterManager));
+
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
 
         try {
             dbHelper.createDataBase();
             database = dbHelper.getDataBase();
 
-            dbCursor = database.rawQuery(
-                    "SELECT * FROM MobCartoDB_table;", null
-            );
+            dbCursor = database.rawQuery("SELECT * FROM MobCartoDB_table;", null);
 
             if (dbCursor.moveToFirst()) {
                 do {
@@ -81,12 +86,15 @@ public class ClusterFragment extends Fragment {
                     double lng = dbCursor.getDouble(dbCursor.getColumnIndexOrThrow("lng"));
                     String name = dbCursor.getString(dbCursor.getColumnIndexOrThrow("name"));
                     String notes = dbCursor.getString(dbCursor.getColumnIndexOrThrow("notes"));
+                    String category = dbCursor.getString(dbCursor.getColumnIndexOrThrow("category"));
 
-                    DatabasePoint point = new DatabasePoint(lat, lng, name, notes);
+                    DatabasePoint point = new DatabasePoint(lat, lng, name, notes, category);
+
+                    // Add the point to the cluster manager
                     clusterManager.addItem(point);
                     builder.include(point.getPosition());
-                }
-                while (dbCursor.moveToNext());
+
+                } while (dbCursor.moveToNext());
             }
 
             clusterManager.cluster();
@@ -99,8 +107,7 @@ public class ClusterFragment extends Fragment {
 
         } catch (Exception e) {
             e.printStackTrace();
-            Toast.makeText(requireContext(), "Error loading map points: " + e.getMessage(),
-                    Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Error loading map points: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         } finally {
             if (dbCursor != null && !dbCursor.isClosed()) {
                 dbCursor.close();
@@ -122,6 +129,42 @@ public class ClusterFragment extends Fragment {
             return false;
         });
     };
+
+    private class CustomClusterRenderer extends DefaultClusterRenderer<DatabasePoint> {
+
+        public CustomClusterRenderer(Context context, GoogleMap map, ClusterManager<DatabasePoint> clusterManager) {
+            super(context, map, clusterManager);
+        }
+
+        @Override
+        protected void onBeforeClusterItemRendered(@NonNull DatabasePoint item, @NonNull MarkerOptions markerOptions) {
+            super.onBeforeClusterItemRendered(item, markerOptions);
+
+            // Get the category from the item and set the marker color
+            String category = item.getCategory(); // or use a different field if necessary
+            float color = getMarkerColor(category);
+            markerOptions.icon(BitmapDescriptorFactory.defaultMarker(color));
+        }
+    }
+
+    private float getMarkerColor(String category) {
+        switch (category) {
+            case "Bar":
+                return BitmapDescriptorFactory.HUE_RED;
+            case "Landmark":
+                return BitmapDescriptorFactory.HUE_BLUE;
+            case "Museum":
+                return BitmapDescriptorFactory.HUE_YELLOW;
+            case "Park":
+                return BitmapDescriptorFactory.HUE_GREEN;
+            case "Restaurant":
+                return BitmapDescriptorFactory.HUE_ORANGE;
+            case "Visit Point":
+                return BitmapDescriptorFactory.HUE_VIOLET;
+            default:
+                return BitmapDescriptorFactory.HUE_AZURE; // Default color
+        }
+    }
 
     public void setLastCameraPosition(CameraPosition cameraPosition) {
         lastCameraPosition = cameraPosition;

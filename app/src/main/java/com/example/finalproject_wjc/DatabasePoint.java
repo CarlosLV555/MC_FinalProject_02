@@ -8,10 +8,13 @@ public class DatabasePoint implements ClusterItem {
     private final String name;
     private final String notes;
 
-    public DatabasePoint(double lat, double lng, String name, String notes) {
+    private final String category;
+
+    public DatabasePoint(double lat, double lng, String name, String notes, String category) {
         this.position = new LatLng(lat, lng);
         this.name = name;
         this.notes = notes;
+        this.category = category;
     }
 
     @Override
@@ -28,4 +31,6 @@ public class DatabasePoint implements ClusterItem {
     public String getSnippet() {
         return notes;
     }
+
+    public String getCategory() {return category;}
 }
