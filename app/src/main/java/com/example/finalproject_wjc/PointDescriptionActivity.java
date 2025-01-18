@@ -43,6 +43,7 @@ public class PointDescriptionActivity extends AppCompatActivity {
                 Intent mapIntent = new Intent(PointDescriptionActivity.this, MainActivity.class);
                 mapIntent.putExtra("lat", intent.getDoubleExtra("lat", 0.0));
                 mapIntent.putExtra("lng", intent.getDoubleExtra("lng", 0.0));
+                mapIntent.putExtra("zoom", 5.0f);
                 startActivity(mapIntent);
             }
         });
