@@ -37,13 +37,16 @@ public class PointDescriptionActivity extends AppCompatActivity {
             tvNotes.setText(intent.getStringExtra("notes"));
         }
 
-        // Button to view the map
         btnMap.setOnClickListener(view -> {
             if (intent != null) {
+                double latitude = intent.getDoubleExtra("lat", 0.0);
+                double longitude = intent.getDoubleExtra("lng", 0.0);
+                float zoomLevel = 15.0f; // Adjust zoom level as needed (e.g., 15 for city-level)
+
                 Intent mapIntent = new Intent(PointDescriptionActivity.this, MainActivity.class);
-                mapIntent.putExtra("lat", intent.getDoubleExtra("lat", 0.0));
-                mapIntent.putExtra("lng", intent.getDoubleExtra("lng", 0.0));
-                mapIntent.putExtra("zoom", 5.0f);
+                mapIntent.putExtra("lat", latitude);
+                mapIntent.putExtra("lng", longitude);
+                mapIntent.putExtra("zoom", zoomLevel);
                 startActivity(mapIntent);
             }
         });

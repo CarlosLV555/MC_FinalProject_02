@@ -1,6 +1,5 @@
 package com.example.finalproject_wjc;
 
-
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -103,6 +102,17 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
         // Load markers from the database
         loadMarkersFromDatabase();
+
+        // Retrieve Intent extras
+        Intent intent = getIntent();
+        double lat = intent.getDoubleExtra("lat", 0.0);
+        double lng = intent.getDoubleExtra("lng", 0.0);
+        float zoom = intent.getFloatExtra("zoom", 5.0f); // Default zoom level
+
+        if (lat != 0.0 && lng != 0.0) {
+            LatLng targetLocation = new LatLng(lat, lng);
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(targetLocation, zoom));
+        }
 
         // Request location permissions
         locationPermissionRequest.launch(new String[]{

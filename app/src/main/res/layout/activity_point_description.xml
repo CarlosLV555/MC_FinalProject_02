@@ -57,13 +57,15 @@
         android:id="@+id/btnMap"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="View on Map" />
+        android:text="View on Map"
+        android:backgroundTint="@color/Background"/>
 
     <Button
         android:id="@+id/btnBack"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Back to List"
-        android:layout_marginTop="16dp" />
+        android:layout_marginTop="16dp"
+        android:backgroundTint="@color/Background"/>
 
 </LinearLayout>

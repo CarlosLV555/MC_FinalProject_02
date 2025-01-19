@@ -5,12 +5,15 @@
     </style>
 
     <!-- Main Theme -->
-    <style name="Theme.MapApp" parent="Base.Theme.MapApp" />
-
+    <style name="Theme.MapApp" parent="Base.Theme.MapApp" >
+    <item name="android:statusBarColor">@color/Background</item>
+    <item name="android:windowBackground">@color/white</item> <!-- Global background -->
+    </style>
     <!-- Splash Screen Theme -->
     <style name="Theme.SplashScreen" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Background color or drawable for splash screen -->
         <item name="android:windowBackground">@color/white</item>
         <item name="android:statusBarColor">@color/Background</item>
     </style>
+
 </resources>

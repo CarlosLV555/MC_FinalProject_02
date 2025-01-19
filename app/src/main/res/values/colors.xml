@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <color name="black">#0F1A10</color>
+    <color name="white">#EEF4D4</color>
     <color name="LightCoral">#E38484</color>
     <color name="Background">#385b3a</color>
     <color name="yellow">#F3A029</color>
     <color name="brown">#987E34</color>
+    <color name="honeydew">#CCE0CD</color>
+    <color name="celadon">#A6C9A8</color>
+    <color name="cambridge">#8DB98F</color>
+    <color name="asparagus">#74AA77</color>
+    <color name="water">#AABAEE</color>
     <color name="red">#EE3927</color>
 
 </resources>
