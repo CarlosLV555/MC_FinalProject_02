@@ -1,62 +1,80 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp">
 
+    <!-- Name TextView with centered text, bold, and increased size -->
     <TextView
         android:id="@+id/tvName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textStyle="bold"
+        android:layout_marginBottom="8dp"
+        android:gravity="center"
         android:text="name"
         android:textAlignment="center"
-        android:textSize="18sp"
-        android:layout_marginBottom="8dp" />
+        android:textSize="50sp"
+        android:textStyle="bold" />
 
+    <!-- Address TextView with centered text -->
     <TextView
         android:id="@+id/tvAddress"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:gravity="center"
         android:text="address"
-        android:textSize="16sp"
-        android:layout_marginBottom="8dp" />
-
-    <TextView
-        android:id="@+id/tvCategory"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="category"
-        android:textSize="16sp"
-        android:layout_marginBottom="8dp" />
-
-    <TextView
-        android:id="@+id/tvSubCategory"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="sub_cat"
-        android:textSize="16sp"
-        android:layout_marginBottom="8dp" />
-
+        android:textAlignment="center"
+        android:textSize="30sp" />
+    <!-- URL TextView with centered text and clickable link -->
     <TextView
         android:id="@+id/tvUrl"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="URL"
-        android:textSize="16sp"
         android:layout_marginBottom="8dp"
-        android:textColorLink="@color/linkColor"
         android:autoLink="web"
-        android:clickable="true"/>
+        android:clickable="true"
+        android:gravity="center"
+        android:text="URL"
+        android:textAlignment="center"
+        android:textColorLink="@color/linkColor"
+        android:textSize="25sp" />
 
+    <!-- Category TextView with centered text -->
+    <TextView
+        android:id="@+id/tvCategory"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:gravity=""
+        android:text="category"
+        android:textAlignment="center"
+        android:textSize="20sp" />
+
+    <!-- SubCategory TextView with centered text -->
+    <TextView
+        android:id="@+id/tvSubCategory"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:gravity=""
+        android:text="sub_cat"
+        android:textAlignment="center"
+        android:textSize="20sp" />
+
+
+    <!-- Notes TextView with centered text -->
     <TextView
         android:id="@+id/tvNotes"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:gravity=""
         android:text="notes"
-        android:textSize="16sp"
-        android:layout_marginBottom="16dp" />
+        android:textAlignment="center"
+        android:textSize="25sp" />
 
     <!-- Content takes up the remaining space -->
     <LinearLayout
@@ -68,24 +86,29 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:gravity="bottom"
         android:orientation="horizontal"
-        android:gravity="bottom">
+        tools:ignore="ExtraText">
 
         <Button
             android:id="@+id/btnBack"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
             android:layout_weight="1"
-            android:text="Back to List"
-            android:backgroundTint="@color/Background"/>
+            android:backgroundTint="@color/Background"
+            android:text="Back to List" />
 
         <Button
             android:id="@+id/btnMap"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
             android:layout_weight="1"
-            android:text="View on Map"
-            android:backgroundTint="@color/Background"/>
+            android:backgroundTint="@color/Background"
+            android:text="View on Map" />
     </LinearLayout>
 
 </LinearLayout>
