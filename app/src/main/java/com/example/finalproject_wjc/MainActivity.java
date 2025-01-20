@@ -155,9 +155,12 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         SQLiteDatabase database = null;
         Cursor cursor = null;
 
+        database = openOrCreateDatabase("MobCarto_SQLite.db", MODE_PRIVATE, null);
+        String query = "SELECT lat, lng, name, category FROM MobCartoDB_table";
+
         try {
-            database = openOrCreateDatabase("MobCarto_SQLite.db", MODE_PRIVATE, null);
-            String query = "SELECT lat, lng, name, category FROM MobCartoDB_table";
+            //database = openOrCreateDatabase("MobCarto_SQLite.db", MODE_PRIVATE, null);
+            //String query = "SELECT lat, lng, name, category FROM MobCartoDB_table";
             cursor = database.rawQuery(query, null);
 
             if (cursor.moveToFirst()) {

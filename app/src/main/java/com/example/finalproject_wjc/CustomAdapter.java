@@ -15,7 +15,7 @@ public class CustomAdapter extends ArrayAdapter<String> {
     private final String[] distances;
 
     public CustomAdapter(Context context, String[] names, String[] distances) {
-        super(context, R.layout.activity_list, names); // Pass 'names' to the parent constructor
+        super(context, R.layout.list_item, names);  // Change to list_item
         this.context = context;
         this.names = names;
         this.distances = distances;
@@ -26,14 +26,12 @@ public class CustomAdapter extends ArrayAdapter<String> {
     public View getView(int position, View convertView, @NonNull ViewGroup parent) {
         if (convertView == null) {
             LayoutInflater inflater = LayoutInflater.from(context);
-            convertView = inflater.inflate(R.layout.activity_list, parent, false);
+            convertView = inflater.inflate(R.layout.list_item, parent, false);  // Change to list_item
         }
 
-        // Get references to the TextViews
         TextView nameTextView = convertView.findViewById(R.id.nameTextView);
         TextView distanceTextView = convertView.findViewById(R.id.distanceTextView);
 
-        // Set name and distance text
         nameTextView.setText(names[position]);
         distanceTextView.setText(distances[position]);
 

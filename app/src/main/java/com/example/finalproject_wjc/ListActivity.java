@@ -43,7 +43,6 @@ public class ListActivity extends AppCompatActivity {
 
         // Initialize views
         ListView listView = findViewById(R.id.list_view);
-        TextView emptyMessage = findViewById(R.id.empty_message);
 
         // Initialize location client
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
@@ -87,14 +86,11 @@ public class ListActivity extends AppCompatActivity {
         Cursor dbCursor = database.rawQuery("SELECT * FROM MobCartoDB_table;", null);
         int length = dbCursor.getCount();
         ListView listView = findViewById(R.id.list_view);
-        TextView emptyMessage = findViewById(R.id.empty_message);
 
         if (length == 0) {
-            emptyMessage.setVisibility(View.VISIBLE);
             listView.setVisibility(View.GONE);
             return;
         } else {
-            emptyMessage.setVisibility(View.GONE);
             listView.setVisibility(View.VISIBLE);
         }
 
