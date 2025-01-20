@@ -25,14 +25,19 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MapStyleOptions;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
     private CameraPosition lastCameraPosition;
     private ActivityResultLauncher<String[]> locationPermissionRequest;
+    private List<Marker> markersList = new ArrayList<>();
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
@@ -107,11 +112,23 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         Intent intent = getIntent();
         double lat = intent.getDoubleExtra("lat", 0.0);
         double lng = intent.getDoubleExtra("lng", 0.0);
-        float zoom = intent.getFloatExtra("zoom", 5.0f); // Default zoom level
+        float zoom = intent.getFloatExtra("zoom", 15.0f); // Default zoom level
 
         if (lat != 0.0 && lng != 0.0) {
             LatLng targetLocation = new LatLng(lat, lng);
+
+            // Move camera to the location
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(targetLocation, zoom));
+
+            // Show info window of the matching marker
+            mMap.setOnMapLoadedCallback(() -> {
+                for (Marker marker : markersList) {
+                    if (marker.getPosition().equals(targetLocation)) {
+                        marker.showInfoWindow();
+                        break;
+                    }
+                }
+            });
         }
 
         // Request location permissions
@@ -120,9 +137,10 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                 Manifest.permission.ACCESS_COARSE_LOCATION
         });
 
-        // Set camera idle listener to save the last position
+        // Save the last camera position
         mMap.setOnCameraIdleListener(() -> lastCameraPosition = mMap.getCameraPosition());
     }
+
 
     private void enableMyLocation() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
@@ -146,23 +164,25 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                 LatLngBounds.Builder boundsBuilder = new LatLngBounds.Builder();
 
                 do {
-                    double latitude = cursor.getDouble(cursor.getColumnIndexOrThrow("lat"));
-                    double longitude = cursor.getDouble(cursor.getColumnIndexOrThrow("lng"));
+                    double lat = cursor.getDouble(cursor.getColumnIndexOrThrow("lat"));
+                    double lng = cursor.getDouble(cursor.getColumnIndexOrThrow("lng"));
                     String name = cursor.getString(cursor.getColumnIndexOrThrow("name"));
                     String category = cursor.getString(cursor.getColumnIndexOrThrow("category"));
 
-                    LatLng position = new LatLng(latitude, longitude);
+                    LatLng position = new LatLng(lat, lng);
                     float color = getMarkerColor(category);
 
-                    mMap.addMarker(new MarkerOptions()
+                    // Add marker and save it in the list
+                    Marker marker = mMap.addMarker(new MarkerOptions()
                             .position(position)
                             .title(name)
                             .icon(BitmapDescriptorFactory.defaultMarker(color)));
+                    markersList.add(marker);
 
                     boundsBuilder.include(position);
                 } while (cursor.moveToNext());
 
-                // Adjust the camera to show all markers
+                // Adjust camera to show all markers
                 LatLngBounds bounds = boundsBuilder.build();
                 mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 100));
             }
@@ -178,6 +198,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
             }
         }
     }
+
 
     private float getMarkerColor(String category) {
         switch (category) {
