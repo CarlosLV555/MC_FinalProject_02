@@ -10,7 +10,8 @@
         android:layout_height="match_parent"
         android:id="@+id/map"
         tools:context=".MainActivity"
-        android:name="com.google.android.gms.maps.SupportMapFragment" />
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_below="@id/text_view_1"/>
     <TextView
         android:id="@+id/text_view_1"
         android:layout_width="match_parent"

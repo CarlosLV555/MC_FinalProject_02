@@ -103,7 +103,8 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         // Set map properties
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.map_style));
-        mMap.getUiSettings().setZoomControlsEnabled(false);
+        mMap.getUiSettings().setZoomControlsEnabled(true);
+        mMap.getUiSettings().setMyLocationButtonEnabled(true);
 
         // Load markers from the database
         loadMarkersFromDatabase();
