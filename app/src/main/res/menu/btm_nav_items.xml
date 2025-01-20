@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+
     <item
-        android:id="@+id/cluster"
-        android:title="Clustering"
-        android:icon="@drawable/icon_cluster" />
+        android:id="@+id/map"
+        android:title="Main Map"
+        android:icon="@drawable/home_icon" />
+
     <item
-        android:id="@+id/heatmap"
-        android:title="Heat Map"
-        android:icon="@drawable/icon_heatmap"/>
+        android:id="@+id/list_view"
+        android:title="List"
+        android:icon="@drawable/list_scaled"/>
 </menu>

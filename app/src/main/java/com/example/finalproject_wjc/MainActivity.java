@@ -40,36 +40,30 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     private List<Marker> markersList = new ArrayList<>();
 
     @RequiresApi(api = Build.VERSION_CODES.N)
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Initialize BottomNavigationView
         BottomNavigationView bottomNavigationView = findViewById(R.id.btm_nav);
+
+        // Avoid redundant navigation
         bottomNavigationView.setOnItemSelectedListener(item -> {
-            Fragment fragment = null;
-
-            if (item.getItemId() == R.id.cluster) {
-                fragment = new ClusterFragment();
-            }
-
-            if (fragment != null) {
-                if (fragment instanceof ClusterFragment) {
-                    ((ClusterFragment) fragment).setLastCameraPosition(lastCameraPosition);
-                }
-
-                getSupportFragmentManager()
-                        .beginTransaction()
-                        .replace(R.id.map, fragment)
-                        .commit();
+            if (item.getItemId() == R.id.map) {
+                return true; // Already on MainActivity
+            } else if (item.getItemId() == R.id.list_view) {
+                startActivity(new Intent(this, ListActivity.class));
+                overridePendingTransition(0, 0);
             }
             return true;
         });
 
+        // Ensure correct item is selected on load
+        bottomNavigationView.setSelectedItemId(R.id.map);
+
         // Map initialization
-        SupportMapFragment mapFragment = (SupportMapFragment)
-                getSupportFragmentManager().findFragmentById(R.id.map);
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
         }
@@ -222,4 +216,5 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                 return BitmapDescriptorFactory.HUE_AZURE; // Default color
         }
     }
+
 }

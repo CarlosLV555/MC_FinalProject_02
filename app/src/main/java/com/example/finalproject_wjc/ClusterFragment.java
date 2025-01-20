@@ -1,7 +1,11 @@
 package com.example.finalproject_wjc;
 
+import static androidx.core.content.ContentProviderCompat.requireContext;
+import static androidx.core.content.ContextCompat.startActivity;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -24,9 +28,12 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MapStyleOptions;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.maps.android.clustering.ClusterManager;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.maps.android.clustering.view.DefaultClusterRenderer;
+import com.google.maps.android.clustering.algo.NonHierarchicalDistanceBasedAlgorithm;
+
 
 public class ClusterFragment extends Fragment {
 
@@ -47,9 +54,9 @@ public class ClusterFragment extends Fragment {
 
         mMap = googleMap;
 
+        // Set map style and settings
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireContext(), R.raw.map_style));
-
         mMap.getUiSettings().setZoomControlsEnabled(false);
         mMap.getUiSettings().setMyLocationButtonEnabled(true);
 
@@ -64,22 +71,24 @@ public class ClusterFragment extends Fragment {
                     int topPadding = textView.getHeight();
                     int bottomPadding = navigationBar.getHeight();
                     int additionalBottomPadding = 150;
-
                     mMap.setPadding(0, topPadding, 0, bottomPadding + additionalBottomPadding);
                 });
             }
         }
 
-        // Initialize ClusterManager and CustomClusterRenderer
+        // Initialize ClusterManager and customize clustering sensitivity
         ClusterManager<DatabasePoint> clusterManager = new ClusterManager<>(requireContext(), mMap);
+        NonHierarchicalDistanceBasedAlgorithm<DatabasePoint> algorithm = new NonHierarchicalDistanceBasedAlgorithm<>();
+        algorithm.setMaxDistanceBetweenClusteredItems(75); // Adjust sensitivity here
+        clusterManager.setAlgorithm(algorithm);
         clusterManager.setRenderer(new CustomClusterRenderer(requireContext(), mMap, clusterManager));
 
+        // Add points to the map and cluster manager
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
 
         try {
             dbHelper.createDataBase();
             database = dbHelper.getDataBase();
-
             dbCursor = database.rawQuery("SELECT * FROM MobCartoDB_table;", null);
 
             if (dbCursor.moveToFirst()) {
@@ -91,16 +100,14 @@ public class ClusterFragment extends Fragment {
                     String category = dbCursor.getString(dbCursor.getColumnIndexOrThrow("category"));
 
                     DatabasePoint point = new DatabasePoint(lat, lng, name, notes, category);
-
-                    // Add the point to the cluster manager
                     clusterManager.addItem(point);
                     builder.include(point.getPosition());
-
                 } while (dbCursor.moveToNext());
             }
 
             clusterManager.cluster();
 
+            // Adjust camera to include all points
             if (!clusterManager.getAlgorithm().getItems().isEmpty()) {
                 LatLngBounds bounds = builder.build();
                 CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngBounds(bounds, 100);
@@ -119,6 +126,7 @@ public class ClusterFragment extends Fragment {
             }
         }
 
+        // Restore last camera position if available
         if (lastCameraPosition != null) {
             mMap.moveCamera(CameraUpdateFactory.newCameraPosition(lastCameraPosition));
         }
@@ -127,8 +135,8 @@ public class ClusterFragment extends Fragment {
         mMap.setOnMarkerClickListener(clusterManager);
 
         clusterManager.setOnClusterItemClickListener(item -> {
-            Toast.makeText(requireContext(), "Selected: " + item.getTitle(), Toast.LENGTH_SHORT).show();
-            return false;
+            // Consume the click event without any UI response
+            return false; // Suppress the default info window and do nothing
         });
     };
 
@@ -142,8 +150,8 @@ public class ClusterFragment extends Fragment {
         protected void onBeforeClusterItemRendered(@NonNull DatabasePoint item, @NonNull MarkerOptions markerOptions) {
             super.onBeforeClusterItemRendered(item, markerOptions);
 
-            // Get the category from the item and set the marker color
-            String category = item.getCategory(); // or use a different field if necessary
+            // Set marker color based on category
+            String category = item.getCategory();
             float color = getMarkerColor(category);
             markerOptions.icon(BitmapDescriptorFactory.defaultMarker(color));
         }
@@ -183,10 +191,43 @@ public class ClusterFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        SupportMapFragment mapFragment =
-                (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+
+        // Find the BottomNavigationView
+        BottomNavigationView bottomNavigationView = requireActivity().findViewById(R.id.btm_nav);
+
+        // Setup navigation listener
+        bottomNavigationView.setOnItemSelectedListener(item -> {
+            if (item.getItemId() == R.id.list_view) {
+                // Navigate to ListActivity
+                startActivity(new Intent(requireContext(), ListActivity.class));
+                requireActivity().overridePendingTransition(0, 0);
+            } else if (item.getItemId() == R.id.map) {
+                // Navigate to MainActivity
+                startActivity(new Intent(requireContext(), MainActivity.class));
+                requireActivity().overridePendingTransition(0, 0);
+            }
+            return true;
+        });
+
+        // Set the selected item in navigation bar
+        // bottomNavigationView.setSelectedItemId(R.id.cluster);
+
+        // Find or add the SupportMapFragment
+        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+
+        if (mapFragment == null) {
+            mapFragment = SupportMapFragment.newInstance();
+            getChildFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.map, mapFragment)
+                    .commit();
+        }
+
+        // Load the map asynchronously
         if (mapFragment != null) {
             mapFragment.getMapAsync(callback);
+        } else {
+            Toast.makeText(requireContext(), "Error initializing map.", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -201,3 +242,4 @@ public class ClusterFragment extends Fragment {
         }
     }
 }
+
