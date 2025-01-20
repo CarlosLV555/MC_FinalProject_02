@@ -36,6 +36,15 @@ public class PointDescriptionActivity extends AppCompatActivity {
             tvUrl.setText(intent.getStringExtra("url"));
             tvNotes.setText(intent.getStringExtra("notes"));
         }
+        // Open URL in browser
+        tvUrl.setOnClickListener(view -> {
+            String url = tvUrl.getText().toString();
+            if (!url.startsWith("http://") && !url.startsWith("https://")) {
+                url = "http://" + url; // Add a default scheme if missing
+            }
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, android.net.Uri.parse(url));
+            startActivity(browserIntent);
+        });
 
         btnMap.setOnClickListener(view -> {
             if (intent != null) {

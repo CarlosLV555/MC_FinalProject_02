@@ -44,7 +44,10 @@
         android:layout_height="wrap_content"
         android:text="URL"
         android:textSize="16sp"
-        android:layout_marginBottom="8dp" />
+        android:layout_marginBottom="8dp"
+        android:textColorLink="@color/linkColor"
+        android:autoLink="web"
+        android:clickable="true"/>
 
     <TextView
         android:id="@+id/tvNotes"
