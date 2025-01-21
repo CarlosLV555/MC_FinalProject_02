@@ -1,6 +1,7 @@
 <resources>
-    <string name="app_name">Your App Name</string>
+    <string name="app_name">Dresden City Explorer</string>
     <string name="splash_image_description">Splash screen icon</string>
-    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="close_button">Close Button</string>
+
 </resources>

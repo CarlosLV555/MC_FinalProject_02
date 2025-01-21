@@ -1,6 +1,7 @@
 package com.example.finalproject_wjc;
 
 import android.Manifest;
+import android.app.Dialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -13,7 +14,6 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
-import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -85,8 +85,15 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
         // FAB Button functionality
         findViewById(R.id.fab).setOnClickListener(view -> {
-            // Start ListActivity
-            startActivity(new Intent(MainActivity.this, ListActivity.class));
+            // Create and configure the custom dialog
+            Dialog customDialog = new Dialog(this);
+            customDialog.setContentView(R.layout.dialog_custom); // Inflate the custom layout
+
+            // Close button functionality
+            customDialog.findViewById(R.id.btn_close).setOnClickListener(v -> customDialog.dismiss());
+
+            // Show the dialog
+            customDialog.show();
         });
     }
 
@@ -95,13 +102,11 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         mMap = googleMap;
 
         // Set map properties
-        //mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.map_style));
         mMap.getUiSettings().setZoomControlsEnabled(true);
         mMap.getUiSettings().setCompassEnabled(true);
         mMap.getUiSettings().setMapToolbarEnabled(true);
         mMap.setPadding(0, 0, 0, 150); // Adjust map content only
-
 
         // Load markers from the database
         loadMarkersFromDatabase();
@@ -138,7 +143,6 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         // Save the last camera position
         mMap.setOnCameraIdleListener(() -> lastCameraPosition = mMap.getCameraPosition());
     }
-
 
     private void enableMyLocation() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
@@ -220,5 +224,4 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                 return BitmapDescriptorFactory.HUE_AZURE; // Default color
         }
     }
-
 }

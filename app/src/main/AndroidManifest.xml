@@ -10,8 +10,6 @@
         tools:ignore="ScopedStorage" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
 
     <application
@@ -24,6 +22,7 @@
         android:supportsRtl="false"
         android:theme="@style/Theme.MapApp"
         tools:targetApi="31">
+
         <activity
             android:name=".ListActivity"
             android:exported="true" />
@@ -42,17 +41,21 @@
             android:theme="@style/Theme.SplashScreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity> <!-- Main Activity -->
+
         <activity
             android:name=".MainActivity"
             android:exported="true" />
         <activity
             android:name=".PointDescriptionActivity"
-            android:exported="true"/>
+            android:exported="true" />
+
+        <!-- CustomAdapterActivity -->
+        <activity
+            android:name=".CustomAdapter"
+            android:exported="true" />
 
     </application>
-
 </manifest>

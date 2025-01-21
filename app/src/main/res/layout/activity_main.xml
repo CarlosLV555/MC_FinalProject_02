@@ -37,7 +37,7 @@
         android:onClick="onClickStartSecondActivity"
         android:padding="12dp"
         android:scaleType="centerInside"
-        android:src="@drawable/list_scaled" />
+        android:src="@drawable/info" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/btm_nav"
