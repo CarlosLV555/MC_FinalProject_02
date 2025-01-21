@@ -88,7 +88,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         try {
             // Open the database from assets
             assetsDB = myContext.getAssets().open(DB_NAME);
-            Log.d("DatabaseHelper", "Database file opened from assets.");
+            Log.d("DatabaseHelper", "Database file opened from assets. Size: " + assetsDB.available() + " bytes");
 
             // Ensure the database directory exists
             File directory = new File(DB_PATH_PREFIX + myContext.getPackageName() + DB_PATH_SUFFIX);
@@ -103,22 +103,27 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             }
 
             // Open the output file
-            dbOut = new FileOutputStream(DB_PATH);
+            File outFile = new File(DB_PATH);
+            dbOut = new FileOutputStream(outFile);
             Log.d("DatabaseHelper", "Output stream to database file created.");
 
-            // Copy the database
-            byte[] buffer = new byte[2297856];
+            // Use a smaller buffer size
+            byte[] buffer = new byte[1024];
             int length;
+            int totalBytes = 0;
             while ((length = assetsDB.read(buffer)) > 0) {
                 dbOut.write(buffer, 0, length);
+                totalBytes += length;
             }
             dbOut.flush();
-            Log.d("DatabaseHelper", "Database copy completed successfully.");
+            Log.d("DatabaseHelper", "Database copy completed successfully. Total bytes copied: " + totalBytes);
+
+            // Verify file size after copy
+            Log.d("DatabaseHelper", "Final database file size: " + outFile.length() + " bytes");
         } catch (IOException e) {
             Log.e("DatabaseHelper", "Error while copying the database: " + e.getMessage(), e);
-            throw e; // Re-throw the exception to be handled by the caller
+            throw e;
         } finally {
-            // Close the streams
             if (assetsDB != null) {
                 try {
                     assetsDB.close();

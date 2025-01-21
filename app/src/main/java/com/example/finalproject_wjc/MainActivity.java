@@ -95,7 +95,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         mMap = googleMap;
 
         // Set map properties
-        mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+        //mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.map_style));
         mMap.getUiSettings().setZoomControlsEnabled(true);
         mMap.getUiSettings().setCompassEnabled(true);
@@ -150,15 +150,17 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private void loadMarkersFromDatabase() {
+        DatabaseHelper dbHelper = new DatabaseHelper(this);
         SQLiteDatabase database = null;
         Cursor cursor = null;
 
-        database = openOrCreateDatabase("MobCarto_SQLite.db", MODE_PRIVATE, null);
-        String query = "SELECT lat, lng, name, category FROM MobCartoDB_table";
-
         try {
-            //database = openOrCreateDatabase("MobCarto_SQLite.db", MODE_PRIVATE, null);
-            //String query = "SELECT lat, lng, name, category FROM MobCartoDB_table";
+            // Create/copy the database if needed
+            dbHelper.createDataBase();
+
+            // Get the database
+            database = dbHelper.getDataBase();
+            String query = "SELECT lat, lng, name, category FROM MobCartoDB_table";
             cursor = database.rawQuery(query, null);
 
             if (cursor.moveToFirst()) {
