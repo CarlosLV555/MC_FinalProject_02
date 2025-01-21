@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="BottomNavActiveIndicator" parent="">
+        <item name="android:color">@color/cambridge</item>
+        <item name="android:shape">oval</item> <!-- Ensures the shape is oval -->
+    </style>
+
+</resources>

@@ -202,7 +202,6 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-
     private float getMarkerColor(String category) {
         switch (category) {
             case "Bar":

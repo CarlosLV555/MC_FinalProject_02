@@ -17,17 +17,49 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class ListActivity extends AppCompatActivity {
     static DatabaseHelper dbHelper;
     private FusedLocationProviderClient fusedLocationClient;
     private double userLat, userLng;
+
+    // New class to hold point data
+    private class PointData {
+        String name;
+        String address;
+        String category;
+        String subCategory;
+        String url;
+        String notes;
+        double lat;
+        double lng;
+        float distance;
+        String distanceText;
+
+        PointData(String name, String address, String category, String subCategory,
+                  String url, String notes, double lat, double lng, float distance, String distanceText) {
+            this.name = name;
+            this.address = address;
+            this.category = category;
+            this.subCategory = subCategory;
+            this.url = url;
+            this.notes = notes;
+            this.lat = lat;
+            this.lng = lng;
+            this.distance = distance;
+            this.distanceText = distanceText;
+        }
+    }
 
     @SuppressLint("Range")
     @Override
@@ -39,7 +71,7 @@ public class ListActivity extends AppCompatActivity {
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.list_view) {
-                return true; // Already on ListActivity
+                return true;
             } else if (item.getItemId() == R.id.map) {
                 startActivity(new Intent(this, MainActivity.class));
                 overridePendingTransition(0, 0);
@@ -49,23 +81,15 @@ public class ListActivity extends AppCompatActivity {
 
         bottomNavigationView.setSelectedItemId(R.id.list_view);
 
-        // Initialize views
         ListView listView = findViewById(R.id.list_view);
 
-        // Initialize location client
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
-        // Get current location
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
+
         fusedLocationClient.getLastLocation()
                 .addOnSuccessListener(this, new OnSuccessListener<Location>() {
                     @Override
@@ -78,7 +102,6 @@ public class ListActivity extends AppCompatActivity {
                     }
                 });
 
-        // Initialize database
         dbHelper = new DatabaseHelper(this);
         try {
             dbHelper.createDataBase();
@@ -89,8 +112,6 @@ public class ListActivity extends AppCompatActivity {
 
     private void loadListView() {
         SQLiteDatabase database = dbHelper.getDataBase();
-
-        // Query data from the database
         Cursor dbCursor = database.rawQuery("SELECT * FROM MobCartoDB_table;", null);
         int length = dbCursor.getCount();
         ListView listView = findViewById(R.id.list_view);
@@ -102,17 +123,20 @@ public class ListActivity extends AppCompatActivity {
             listView.setVisibility(View.VISIBLE);
         }
 
-        String[] db_names = new String[length];
-        String[] distances = new String[length];
-        final Cursor finalCursor = dbCursor;
+        // Create a list to hold all point data
+        ArrayList<PointData> points = new ArrayList<>();
 
         dbCursor.moveToFirst();
         for (int i = 0; i < length; i++) {
             String name = dbCursor.getString(dbCursor.getColumnIndexOrThrow("name"));
+            String address = dbCursor.getString(dbCursor.getColumnIndexOrThrow("address"));
+            String category = dbCursor.getString(dbCursor.getColumnIndexOrThrow("category"));
+            String subCategory = dbCursor.getString(dbCursor.getColumnIndexOrThrow("sub_cat"));
+            String url = dbCursor.getString(dbCursor.getColumnIndexOrThrow("url"));
+            String notes = dbCursor.getString(dbCursor.getColumnIndexOrThrow("notes"));
             double lat = dbCursor.getDouble(dbCursor.getColumnIndexOrThrow("lat"));
             double lng = dbCursor.getDouble(dbCursor.getColumnIndexOrThrow("lng"));
 
-            // Calculate the distance from the user's current location
             Location pointLocation = new Location("point");
             pointLocation.setLatitude(lat);
             pointLocation.setLongitude(lng);
@@ -121,46 +145,50 @@ public class ListActivity extends AppCompatActivity {
             userLocation.setLatitude(userLat);
             userLocation.setLongitude(userLng);
 
-            float distance = userLocation.distanceTo(pointLocation); // Distance in meters
+            float distance = userLocation.distanceTo(pointLocation);
+            String distanceText = (distance < 1000) ?
+                    Math.round(distance) + " meters" :
+                    String.format("%.2f", distance / 1000) + " km";
 
-            String distanceText = (distance < 1000) ? distance + " meters" : String.format("%.2f", distance / 1000) + " km";
+            points.add(new PointData(name, address, category, subCategory, url, notes,
+                    lat, lng, distance, distanceText));
 
-            db_names[i] = name;  // Only the name in the name array
-            distances[i] = distanceText;  // Distance in the distances array
             dbCursor.moveToNext();
         }
-        dbCursor.moveToFirst(); // Reset cursor
 
-        // Use CustomAdapter
+        // Sort points by distance
+        Collections.sort(points, new Comparator<PointData>() {
+            @Override
+            public int compare(PointData p1, PointData p2) {
+                return Float.compare(p1.distance, p2.distance);
+            }
+        });
+
+        // Create arrays for the adapter
+        String[] db_names = new String[length];
+        String[] distances = new String[length];
+
+        for (int i = 0; i < length; i++) {
+            db_names[i] = points.get(i).name;
+            distances[i] = points.get(i).distanceText;
+        }
+
         CustomAdapter adapter = new CustomAdapter(this, db_names, distances);
         listView.setAdapter(adapter);
 
-        // Set item click listener
         listView.setOnItemClickListener((AdapterView<?> parent, View view, int position, long id) -> {
-            finalCursor.moveToPosition(position);
+            PointData selectedPoint = points.get(position);
 
-            // Get the data for the selected item
-            String name = finalCursor.getString(finalCursor.getColumnIndexOrThrow("name"));
-            String address = finalCursor.getString(finalCursor.getColumnIndexOrThrow("address"));
-            String category = finalCursor.getString(finalCursor.getColumnIndexOrThrow("category"));
-            String subCategory = finalCursor.getString(finalCursor.getColumnIndexOrThrow("sub_cat"));
-            String url = finalCursor.getString(finalCursor.getColumnIndexOrThrow("url"));
-            String notes = finalCursor.getString(finalCursor.getColumnIndexOrThrow("notes"));
-            double lat = finalCursor.getDouble(finalCursor.getColumnIndexOrThrow("lat"));
-            double lng = finalCursor.getDouble(finalCursor.getColumnIndexOrThrow("lng"));
-
-            // Create an intent to start PointDescriptionActivity
             Intent intent = new Intent(ListActivity.this, PointDescriptionActivity.class);
-            intent.putExtra("name", name);
-            intent.putExtra("address", address);
-            intent.putExtra("category", category);
-            intent.putExtra("sub_cat", subCategory); // Must match the key in PointDescriptionActivity
-            intent.putExtra("url", url);
-            intent.putExtra("notes", notes);
-            intent.putExtra("lat", lat);
-            intent.putExtra("lng", lng);
+            intent.putExtra("name", selectedPoint.name);
+            intent.putExtra("address", selectedPoint.address);
+            intent.putExtra("category", selectedPoint.category);
+            intent.putExtra("sub_cat", selectedPoint.subCategory);
+            intent.putExtra("url", selectedPoint.url);
+            intent.putExtra("notes", selectedPoint.notes);
+            intent.putExtra("lat", selectedPoint.lat);
+            intent.putExtra("lng", selectedPoint.lng);
 
-            // Start the PointDescriptionActivity
             startActivity(intent);
         });
     }
