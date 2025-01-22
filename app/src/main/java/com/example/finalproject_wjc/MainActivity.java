@@ -3,6 +3,7 @@ package com.example.finalproject_wjc;
 import android.Manifest;
 import android.app.Dialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -34,17 +35,22 @@ import java.util.List;
 
 public class MainActivity extends FragmentActivity implements OnMapReadyCallback {
 
+    private static final String PREFS_NAME = "AppPreferences";
+    private static final String KEY_FIRST_LAUNCH = "FirstLaunch";
+
     private GoogleMap mMap;
     private CameraPosition lastCameraPosition;
     private ActivityResultLauncher<String[]> locationPermissionRequest;
     private List<Marker> markersList = new ArrayList<>();
 
     @RequiresApi(api = Build.VERSION_CODES.N)
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Check if this is the first launch
+        checkFirstLaunch();
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.btm_nav);
 
@@ -83,18 +89,36 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                     }
                 });
 
-        // FAB Button functionality
+        // Set up FAB to show the welcome popup
         findViewById(R.id.fab).setOnClickListener(view -> {
-            // Create and configure the custom dialog
-            Dialog customDialog = new Dialog(this);
-            customDialog.setContentView(R.layout.dialog_custom); // Inflate the custom layout
-
-            // Close button functionality
-            customDialog.findViewById(R.id.btn_close).setOnClickListener(v -> customDialog.dismiss());
-
-            // Show the dialog
-            customDialog.show();
+            showWelcomePopup();
         });
+    }
+
+    private void checkFirstLaunch() {
+        SharedPreferences preferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        boolean isFirstLaunch = preferences.getBoolean(KEY_FIRST_LAUNCH, true);
+
+        if (isFirstLaunch) {
+            // Show the welcome dialog
+            showWelcomePopup();
+
+            // Update preference to indicate the app has been launched before
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putBoolean(KEY_FIRST_LAUNCH, false);
+            editor.apply();
+        }
+    }
+
+    private void showWelcomePopup() {
+        Dialog customDialog = new Dialog(this);
+        customDialog.setContentView(R.layout.dialog_custom); // Inflate the custom layout
+
+        // Close button functionality
+        customDialog.findViewById(R.id.btn_close).setOnClickListener(v -> customDialog.dismiss());
+
+        // Show the dialog
+        customDialog.show();
     }
 
     @Override
@@ -110,29 +134,6 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
         // Load markers from the database
         loadMarkersFromDatabase();
-
-        // Retrieve Intent extras
-        Intent intent = getIntent();
-        double lat = intent.getDoubleExtra("lat", 0.0);
-        double lng = intent.getDoubleExtra("lng", 0.0);
-        float zoom = intent.getFloatExtra("zoom", 15.0f); // Default zoom level
-
-        if (lat != 0.0 && lng != 0.0) {
-            LatLng targetLocation = new LatLng(lat, lng);
-
-            // Move camera to the location
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(targetLocation, zoom));
-
-            // Show info window of the matching marker
-            mMap.setOnMapLoadedCallback(() -> {
-                for (Marker marker : markersList) {
-                    if (marker.getPosition().equals(targetLocation)) {
-                        marker.showInfoWindow();
-                        break;
-                    }
-                }
-            });
-        }
 
         // Request location permissions
         locationPermissionRequest.launch(new String[]{
