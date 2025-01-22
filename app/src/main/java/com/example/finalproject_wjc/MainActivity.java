@@ -38,6 +38,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     private CameraPosition lastCameraPosition;
     private ActivityResultLauncher<String[]> locationPermissionRequest;
     private List<Marker> markersList = new ArrayList<>();
+    private static CameraPosition lastSavedPosition = null;
 
     @RequiresApi(api = Build.VERSION_CODES.N)
 
@@ -132,8 +133,10 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                     }
                 }
             });
+        }else if (lastSavedPosition != null) {
+            // Restore the last saved camera position
+            mMap.moveCamera(CameraUpdateFactory.newCameraPosition(lastSavedPosition));
         }
-
         // Request location permissions
         locationPermissionRequest.launch(new String[]{
                 Manifest.permission.ACCESS_FINE_LOCATION,
@@ -141,7 +144,10 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         });
 
         // Save the last camera position
-        mMap.setOnCameraIdleListener(() -> lastCameraPosition = mMap.getCameraPosition());
+        mMap.setOnCameraIdleListener(() -> {
+            lastCameraPosition = mMap.getCameraPosition();
+            lastSavedPosition = lastCameraPosition;
+        });
     }
 
     private void enableMyLocation() {
