@@ -34,14 +34,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends FragmentActivity implements OnMapReadyCallback {
-
     private static final String PREFS_NAME = "AppPreferences";
     private static final String KEY_FIRST_LAUNCH = "FirstLaunch";
-
     private GoogleMap mMap;
     private CameraPosition lastCameraPosition;
     private ActivityResultLauncher<String[]> locationPermissionRequest;
     private List<Marker> markersList = new ArrayList<>();
+    private static CameraPosition lastSavedPosition = null;
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
@@ -135,6 +134,32 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         // Load markers from the database
         loadMarkersFromDatabase();
 
+        // Retrieve Intent extras
+        Intent intent = getIntent();
+        double lat = intent.getDoubleExtra("lat", 0.0);
+        double lng = intent.getDoubleExtra("lng", 0.0);
+        float zoom = intent.getFloatExtra("zoom", 5.0f); // Default zoom level
+
+        if (lat != 0.0 && lng != 0.0) {
+            LatLng targetLocation = new LatLng(lat, lng);
+
+            // Move camera to the location
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(targetLocation, zoom));
+
+            // Show info window of the matching marker
+            mMap.setOnMapLoadedCallback(() -> {
+                for (Marker marker : markersList) {
+                    if (marker.getPosition().equals(targetLocation)) {
+                        marker.showInfoWindow();
+                        break;
+                    }
+                }
+            });
+        } else if (lastSavedPosition != null) {
+            // Restore the last saved camera position
+            mMap.moveCamera(CameraUpdateFactory.newCameraPosition(lastSavedPosition));
+        }
+
         // Request location permissions
         locationPermissionRequest.launch(new String[]{
                 Manifest.permission.ACCESS_FINE_LOCATION,
@@ -142,7 +167,10 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         });
 
         // Save the last camera position
-        mMap.setOnCameraIdleListener(() -> lastCameraPosition = mMap.getCameraPosition());
+        mMap.setOnCameraIdleListener(() -> {
+            lastCameraPosition = mMap.getCameraPosition();
+            lastSavedPosition = lastCameraPosition;
+        });
     }
 
     private void enableMyLocation() {
