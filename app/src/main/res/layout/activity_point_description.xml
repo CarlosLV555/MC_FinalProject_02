@@ -53,18 +53,6 @@
         android:textAlignment="center"
         android:textSize="20sp" />
 
-    <!-- SubCategory TextView with centered text -->
-    <TextView
-        android:id="@+id/tvSubCategory"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:gravity=""
-        android:text="sub_cat"
-        android:textAlignment="center"
-        android:textSize="20sp" />
-
-
     <!-- Notes TextView with centered text -->
     <TextView
         android:id="@+id/tvNotes"

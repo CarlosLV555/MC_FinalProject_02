@@ -20,7 +20,6 @@ public class PointDescriptionActivity extends AppCompatActivity {
         tvName = findViewById(R.id.tvName);
         tvAddress = findViewById(R.id.tvAddress);
         tvCategory = findViewById(R.id.tvCategory);
-        tvSubCategory = findViewById(R.id.tvSubCategory);
         tvUrl = findViewById(R.id.tvUrl);
         tvNotes = findViewById(R.id.tvNotes);
         btnMap = findViewById(R.id.btnMap);
@@ -32,7 +31,6 @@ public class PointDescriptionActivity extends AppCompatActivity {
             tvName.setText(intent.getStringExtra("name"));
             tvAddress.setText(intent.getStringExtra("address"));
             tvCategory.setText(intent.getStringExtra("category"));
-            tvSubCategory.setText(intent.getStringExtra("sub_cat")); // Ensure key matches ListActivity
             tvUrl.setText(intent.getStringExtra("url"));
             tvNotes.setText(intent.getStringExtra("notes"));
         }
