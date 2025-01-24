@@ -2,11 +2,15 @@ package com.example.finalproject_wjc;
 
 import android.Manifest;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.widget.Toast;
@@ -29,6 +33,16 @@ import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+import androidx.core.graphics.drawable.DrawableCompat;
+import androidx.core.content.ContextCompat;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -132,7 +146,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.setPadding(0, 0, 0, 150); // Adjust map content only
 
         // Load markers from the database
-        loadMarkersFromDatabase();
+        loadMarkersFromDatabase(this);
 
         // Retrieve Intent extras
         Intent intent = getIntent();
@@ -182,7 +196,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.getUiSettings().setMyLocationButtonEnabled(true);
     }
 
-    private void loadMarkersFromDatabase() {
+    private void loadMarkersFromDatabase(Context context) {
         DatabaseHelper dbHelper = new DatabaseHelper(this);
         SQLiteDatabase database = null;
         Cursor cursor = null;
@@ -206,13 +220,13 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                     String category = cursor.getString(cursor.getColumnIndexOrThrow("category"));
 
                     LatLng position = new LatLng(lat, lng);
-                    float color = getMarkerColor(category);
+                    BitmapDescriptor icon = getMarkerIcon(category, context); // Pass the context
 
                     // Add marker and save it in the list
                     Marker marker = mMap.addMarker(new MarkerOptions()
                             .position(position)
                             .title(name)
-                            .icon(BitmapDescriptorFactory.defaultMarker(color)));
+                            .icon(icon));
                     markersList.add(marker);
 
                     boundsBuilder.include(position);
@@ -235,22 +249,46 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-    private float getMarkerColor(String category) {
+
+    private BitmapDescriptor getMarkerIcon(String category, Context context) {
+        int color = getMarkerColor(category, context);
+        return BitmapDescriptorFactory.fromBitmap(getColoredMarker(context, color));
+    }
+
+    private Bitmap getColoredMarker(Context context, int color) {
+        String markerIconName = context.getString(R.string.map_marker_icon);
+        Drawable drawable = ContextCompat.getDrawable(context, R.drawable.marker_black);
+
+        if (drawable == null) {
+            // Handle drawable not found (very unlikely for the default marker)
+            return null;
+        }
+        drawable = DrawableCompat.wrap(drawable).mutate();
+        DrawableCompat.setTint(drawable, color);
+        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        drawable.draw(canvas);
+        return bitmap;
+    }
+
+
+    private int getMarkerColor(String category, Context context) {
         switch (category) {
             case "Bar":
-                return BitmapDescriptorFactory.HUE_RED;
+                return ContextCompat.getColor(context, R.color.bar_color);
             case "Landmark":
-                return BitmapDescriptorFactory.HUE_BLUE;
+                return ContextCompat.getColor(context, R.color.landmark_color);
             case "Museum":
-                return BitmapDescriptorFactory.HUE_YELLOW;
+                return ContextCompat.getColor(context, R.color.museum_color);
             case "Park":
-                return BitmapDescriptorFactory.HUE_GREEN;
+                return ContextCompat.getColor(context, R.color.park_color);
             case "Restaurant":
-                return BitmapDescriptorFactory.HUE_ORANGE;
+                return ContextCompat.getColor(context, R.color.restaurant_color);
             case "Visit Point":
-                return BitmapDescriptorFactory.HUE_VIOLET;
+                return ContextCompat.getColor(context, R.color.visit_point_color);
             default:
-                return BitmapDescriptorFactory.HUE_AZURE; // Default color
+                return ContextCompat.getColor(context, R.color.default_color);
         }
     }
 }

@@ -14,13 +14,13 @@
     <color name="red">#EE3927</color>
     <color name="gray">#898989</color>
     <color name="linkColor">#1021AD</color>
-    <color name="park_color">#35EA35</color>
-    <color name="bar_color">#EA3535</color>
-    <color name="restaurant_color">#EA9035</color>
-    <color name="museum_color">#EAEA35</color>
-    <color name="visit_point_color">#9035EA</color>
-    <color name="landmark_color">#1C1BCB</color>
-
+    <color name="park_color">#9A031E</color>
+    <color name="bar_color">#795838</color>
+    <color name="restaurant_color">#E36414</color>
+    <color name="museum_color">#0F4C5C</color>
+    <color name="visit_point_color">#5F0F40</color>
+    <color name="landmark_color">#B07C9E</color>
+    <color name="default_color">#1C1BCB</color>
 
 
 </resources>

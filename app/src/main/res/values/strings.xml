@@ -4,4 +4,6 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="close_button">Close Button</string>
 
+    <string name="map_marker_icon">common_google_signin_btn_icon_dark</string>
+
 </resources>
