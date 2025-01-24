@@ -10,31 +10,25 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 
 public class ListActivity extends AppCompatActivity {
+    @SuppressLint("StaticFieldLeak")
     static DatabaseHelper dbHelper;
-    private FusedLocationProviderClient fusedLocationClient;
     private double userLat, userLng;
 
     // New class to hold point data
-    private class PointData {
+    private static class PointData {
         String name;
         String address;
         String category;
@@ -45,9 +39,10 @@ public class ListActivity extends AppCompatActivity {
         double lng;
         float distance;
         String distanceText;
+        String img;
 
         PointData(String name, String address, String category, String subCategory,
-                  String url, String notes, double lat, double lng, float distance, String distanceText) {
+                  String url, String notes, double lat, double lng, float distance, String distanceText, String img) {
             this.name = name;
             this.address = address;
             this.category = category;
@@ -58,6 +53,7 @@ public class ListActivity extends AppCompatActivity {
             this.lng = lng;
             this.distance = distance;
             this.distanceText = distanceText;
+            this.img = img;
         }
     }
 
@@ -79,11 +75,11 @@ public class ListActivity extends AppCompatActivity {
             return true;
         });
 
+        // setting bottom nav view bubble
         bottomNavigationView.setSelectedItemId(R.id.list_view);
 
-        ListView listView = findViewById(R.id.list_view);
 
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -91,14 +87,11 @@ public class ListActivity extends AppCompatActivity {
         }
 
         fusedLocationClient.getLastLocation()
-                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
-                    @Override
-                    public void onSuccess(Location location) {
-                        if (location != null) {
-                            userLat = location.getLatitude();
-                            userLng = location.getLongitude();
-                            loadListView();
-                        }
+                .addOnSuccessListener(this, location -> {
+                    if (location != null) {
+                        userLat = location.getLatitude();
+                        userLng = location.getLongitude();
+                        loadListView();
                     }
                 });
 
@@ -112,7 +105,7 @@ public class ListActivity extends AppCompatActivity {
 
     private void loadListView() {
         SQLiteDatabase database = dbHelper.getDataBase();
-        Cursor dbCursor = database.rawQuery("SELECT * FROM MobCartoDB_table;", null);
+        @SuppressLint("Recycle") Cursor dbCursor = database.rawQuery("SELECT * FROM MobCartoDB_table;", null);
         int length = dbCursor.getCount();
         ListView listView = findViewById(R.id.list_view);
 
@@ -136,6 +129,7 @@ public class ListActivity extends AppCompatActivity {
             String notes = dbCursor.getString(dbCursor.getColumnIndexOrThrow("notes"));
             double lat = dbCursor.getDouble(dbCursor.getColumnIndexOrThrow("lat"));
             double lng = dbCursor.getDouble(dbCursor.getColumnIndexOrThrow("lng"));
+            String img = dbCursor.getString(dbCursor.getColumnIndexOrThrow("img"));
 
             Location pointLocation = new Location("point");
             pointLocation.setLatitude(lat);
@@ -146,23 +140,18 @@ public class ListActivity extends AppCompatActivity {
             userLocation.setLongitude(userLng);
 
             float distance = userLocation.distanceTo(pointLocation);
-            String distanceText = (distance < 1000) ?
+            @SuppressLint("DefaultLocale") String distanceText = (distance < 1000) ?
                     Math.round(distance) + " meters" :
                     String.format("%.2f", distance / 1000) + " km";
 
             points.add(new PointData(name, address, category, subCategory, url, notes,
-                    lat, lng, distance, distanceText));
+                    lat, lng, distance, distanceText, img));
 
             dbCursor.moveToNext();
         }
 
         // Sort points by distance
-        Collections.sort(points, new Comparator<PointData>() {
-            @Override
-            public int compare(PointData p1, PointData p2) {
-                return Float.compare(p1.distance, p2.distance);
-            }
-        });
+        Collections.sort(points, (p1, p2) -> Float.compare(p1.distance, p2.distance));
 
         // Create arrays for the adapter
         String[] db_names = new String[length];
@@ -190,6 +179,7 @@ public class ListActivity extends AppCompatActivity {
             intent.putExtra("notes", selectedPoint.notes);
             intent.putExtra("lat", selectedPoint.lat);
             intent.putExtra("lng", selectedPoint.lng);
+            intent.putExtra("img", selectedPoint.img);
 
             startActivity(intent);
         });

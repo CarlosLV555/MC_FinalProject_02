@@ -17,7 +17,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static String DB_PATH;
     private static final String DB_PATH_PREFIX = "/data/user/0/";
     private static final String DB_PATH_SUFFIX = "/databases/";
-    private static final String DB_NAME = "MobCarto_SQLite.db";
+    private static final String DB_NAME = "Dresden_City_Explorer.db";
     private SQLiteDatabase myDataBase;
     private final Context myContext;
 

@@ -3,12 +3,17 @@ package com.example.finalproject_wjc;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.bumptech.glide.Glide;
+
+
 public class PointDescriptionActivity extends AppCompatActivity {
-    TextView tvName, tvAddress, tvCategory, tvSubCategory, tvUrl, tvNotes;
+    TextView tvName, tvAddress, tvCategory, tvUrl, tvNotes;
+    ImageView ivImage;
     Button btnMap, btnBack;
 
     @Override
@@ -22,6 +27,7 @@ public class PointDescriptionActivity extends AppCompatActivity {
         tvCategory = findViewById(R.id.tvCategory);
         tvUrl = findViewById(R.id.tvUrl);
         tvNotes = findViewById(R.id.tvNotes);
+        ivImage = findViewById(R.id.ivImage);
         btnMap = findViewById(R.id.btnMap);
         btnBack = findViewById(R.id.btnBack);
 
@@ -33,7 +39,17 @@ public class PointDescriptionActivity extends AppCompatActivity {
             tvCategory.setText(intent.getStringExtra("category"));
             tvUrl.setText(intent.getStringExtra("url"));
             tvNotes.setText(intent.getStringExtra("notes"));
+
+            // Load image from URL
+            String imageUrl = intent.getStringExtra("img");
+            if (imageUrl != null && !imageUrl.isEmpty()) {
+                Glide.with(this)
+                        .load(imageUrl)
+                        .fitCenter()  // or .centerCrop() depending on your preference
+                        .into(ivImage);
+            }
         }
+
         // Open URL in browser
         tvUrl.setOnClickListener(view -> {
             String url = tvUrl.getText().toString();

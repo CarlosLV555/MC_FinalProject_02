@@ -17,6 +17,7 @@ import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentActivity;
@@ -34,18 +35,14 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-import android.graphics.Color;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffColorFilter;
+
 import com.google.android.gms.maps.model.BitmapDescriptor;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
 import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.core.content.ContextCompat;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class MainActivity extends FragmentActivity implements OnMapReadyCallback {
     private static final String PREFS_NAME = "AppPreferences";
@@ -53,7 +50,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     private GoogleMap mMap;
     private CameraPosition lastCameraPosition;
     private ActivityResultLauncher<String[]> locationPermissionRequest;
-    private List<Marker> markersList = new ArrayList<>();
+    private final List<Marker> markersList = new ArrayList<>();
     private static CameraPosition lastSavedPosition = null;
 
     @RequiresApi(api = Build.VERSION_CODES.N)
@@ -90,8 +87,8 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         // Location permission setup
         locationPermissionRequest = registerForActivityResult(
                 new ActivityResultContracts.RequestMultiplePermissions(), result -> {
-                    boolean fineLocationGranted = result.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false);
-                    boolean coarseLocationGranted = result.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false);
+                    boolean fineLocationGranted = Boolean.TRUE.equals(result.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false));
+                    boolean coarseLocationGranted = Boolean.TRUE.equals(result.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false));
 
                     if (fineLocationGranted || coarseLocationGranted) {
                         enableMyLocation();
@@ -135,7 +132,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     @Override
-    public void onMapReady(GoogleMap googleMap) {
+    public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
 
         // Set map properties
@@ -187,6 +184,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         });
     }
 
+    // Enable user location
     private void enableMyLocation() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -196,6 +194,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.getUiSettings().setMyLocationButtonEnabled(true);
     }
 
+    // load markers using dbhelper into map
     private void loadMarkersFromDatabase(Context context) {
         DatabaseHelper dbHelper = new DatabaseHelper(this);
         SQLiteDatabase database = null;
@@ -249,14 +248,13 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-
+    // get custom icon for markers
     private BitmapDescriptor getMarkerIcon(String category, Context context) {
         int color = getMarkerColor(category, context);
-        return BitmapDescriptorFactory.fromBitmap(getColoredMarker(context, color));
+        return BitmapDescriptorFactory.fromBitmap(Objects.requireNonNull(getColoredMarker(context, color)));
     }
 
     private Bitmap getColoredMarker(Context context, int color) {
-        String markerIconName = context.getString(R.string.map_marker_icon);
         Drawable drawable = ContextCompat.getDrawable(context, R.drawable.marker_black);
 
         if (drawable == null) {
@@ -272,7 +270,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         return bitmap;
     }
 
-
+    // setting custom colors for the markers
     private int getMarkerColor(String category, Context context) {
         switch (category) {
             case "Bar":
