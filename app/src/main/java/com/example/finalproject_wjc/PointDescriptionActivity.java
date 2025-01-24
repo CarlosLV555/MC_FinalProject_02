@@ -24,7 +24,7 @@ public class PointDescriptionActivity extends AppCompatActivity {
         // Initialize views
         tvName = findViewById(R.id.tvName);
         tvAddress = findViewById(R.id.tvAddress);
-        tvCategory = findViewById(R.id.tvCategory);
+        //tvCategory = findViewById(R.id.tvCategory);
         tvUrl = findViewById(R.id.tvUrl);
         tvNotes = findViewById(R.id.tvNotes);
         ivImage = findViewById(R.id.ivImage);
@@ -36,7 +36,7 @@ public class PointDescriptionActivity extends AppCompatActivity {
         if (intent != null) {
             tvName.setText(intent.getStringExtra("name"));
             tvAddress.setText(intent.getStringExtra("address"));
-            tvCategory.setText(intent.getStringExtra("category"));
+            //tvCategory.setText(intent.getStringExtra("category"));
             tvUrl.setText(intent.getStringExtra("url"));
             tvNotes.setText(intent.getStringExtra("notes"));
 

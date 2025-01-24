@@ -64,18 +64,6 @@
         android:textSize="25sp"
         tools:ignore="HardcodedText" />
 
-    <!-- Category TextView with centered text -->
-    <TextView
-        android:id="@+id/tvCategory"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:gravity=""
-        android:text="category"
-        android:textAlignment="center"
-        android:textSize="20sp"
-        tools:ignore="HardcodedText" />
-
     <!-- Notes TextView with centered text -->
     <TextView
         android:id="@+id/tvNotes"
