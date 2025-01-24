@@ -12,7 +12,12 @@
         android:layout_height="wrap_content"
         android:textColor="@color/black"
         android:textSize="18sp" />
-
+    <TextView
+        android:id="@+id/categoryTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/black"
+        android:textSize="16sp" />
     <TextView
         android:id="@+id/distanceTextView"
         android:layout_width="match_parent"

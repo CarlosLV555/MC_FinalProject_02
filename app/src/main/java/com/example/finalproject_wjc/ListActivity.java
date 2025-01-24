@@ -166,14 +166,16 @@ public class ListActivity extends AppCompatActivity {
 
         // Create arrays for the adapter
         String[] db_names = new String[length];
+        String[] db_category = new String[length];
         String[] distances = new String[length];
 
         for (int i = 0; i < length; i++) {
             db_names[i] = points.get(i).name;
+            db_category[i] = points.get(i).category;
             distances[i] = points.get(i).distanceText;
         }
 
-        CustomAdapter adapter = new CustomAdapter(this, db_names, distances);
+        CustomAdapter adapter = new CustomAdapter(this, db_names, db_category, distances);
         listView.setAdapter(adapter);
 
         listView.setOnItemClickListener((AdapterView<?> parent, View view, int position, long id) -> {
