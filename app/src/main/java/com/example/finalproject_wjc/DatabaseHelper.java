@@ -26,6 +26,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         this.myContext = context;
     }
 
+    // Create the database if it doesn't exist
     public void createDataBase() throws IOException {
         // Set the database path
         DB_PATH = DB_PATH_PREFIX + myContext.getPackageName() + DB_PATH_SUFFIX + DB_NAME;
@@ -65,6 +66,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
+    // Check if the database already exists
     private boolean checkDataBase() {
         SQLiteDatabase checkDB = null;
         try {
@@ -79,6 +81,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
+    // Copy the database file from the assets folder
     private void copyDataBase() throws IOException {
         Log.d("DatabaseHelper", "Starting database copy process.");
 
@@ -143,6 +146,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
+    // Open the database for read/write operations
     public SQLiteDatabase getDataBase() throws SQLException {
         Log.d("DatabaseHelper", "Opening the database.");
         myDataBase = SQLiteDatabase.openDatabase(DB_PATH, null,

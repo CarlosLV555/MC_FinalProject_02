@@ -10,7 +10,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 
-
 public class PointDescriptionActivity extends AppCompatActivity {
     TextView tvName, tvAddress, tvCategory, tvUrl, tvNotes;
     ImageView ivImage;
@@ -34,38 +33,41 @@ public class PointDescriptionActivity extends AppCompatActivity {
         // Get data from intent
         Intent intent = getIntent();
         if (intent != null) {
+            // Set text views with data from intent extras
             tvName.setText(intent.getStringExtra("name"));
             tvAddress.setText(intent.getStringExtra("address"));
             //tvCategory.setText(intent.getStringExtra("category"));
             tvUrl.setText(intent.getStringExtra("url"));
             tvNotes.setText(intent.getStringExtra("notes"));
 
-            // Load image from URL
+            // Load image from URL using Glide
             String imageUrl = intent.getStringExtra("img");
             if (imageUrl != null && !imageUrl.isEmpty()) {
                 Glide.with(this)
                         .load(imageUrl)
-                        .fitCenter()  // or .centerCrop() depending on your preference
+                        .fitCenter()  // Adjust image scaling to fit center
                         .into(ivImage);
             }
         }
 
-        // Open URL in browser
+        // Open URL in a browser when clicked
         tvUrl.setOnClickListener(view -> {
             String url = tvUrl.getText().toString();
             if (!url.startsWith("http://") && !url.startsWith("https://")) {
-                url = "http://" + url; // Add a default scheme if missing
+                url = "http://" + url; // Add default HTTP scheme if missing
             }
             Intent browserIntent = new Intent(Intent.ACTION_VIEW, android.net.Uri.parse(url));
             startActivity(browserIntent);
         });
 
+        // Open map activity with location details
         btnMap.setOnClickListener(view -> {
             if (intent != null) {
-                double lat = intent.getDoubleExtra("lat", 0.0);
-                double lng = intent.getDoubleExtra("lng", 0.0);
-                float zoomLevel = 15.0f; // Adjust zoom level as needed (e.g., 15 for city-level)
+                double lat = intent.getDoubleExtra("lat", 0.0); // Get latitude from intent
+                double lng = intent.getDoubleExtra("lng", 0.0); // Get longitude from intent
+                float zoomLevel = 15.0f; // Default zoom level for the map
 
+                // Create and start intent for MainActivity to display location
                 Intent mapIntent = new Intent(PointDescriptionActivity.this, MainActivity.class);
                 mapIntent.putExtra("lat", lat);
                 mapIntent.putExtra("lng", lng);
@@ -74,9 +76,9 @@ public class PointDescriptionActivity extends AppCompatActivity {
             }
         });
 
-        // Button to go back to the list
+        // Button to return to the previous screen
         btnBack.setOnClickListener(view -> {
-            finish(); // Finish the activity and return to the previous screen
+            finish(); // End the current activity and go back
         });
     }
 }

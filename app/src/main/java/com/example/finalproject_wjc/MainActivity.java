@@ -35,7 +35,6 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.core.content.ContextCompat;
@@ -64,34 +63,34 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.btm_nav);
 
-        // Avoid redundant navigation
+        // Handle navigation button clicks
         bottomNavigationView.setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.map) {
                 return true; // Already on MainActivity
             } else if (item.getItemId() == R.id.list_view) {
-                startActivity(new Intent(this, ListActivity.class));
+                startActivity(new Intent(this, ListActivity.class)); // Navigate to ListActivity
                 overridePendingTransition(0, 0);
             }
             return true;
         });
 
-        // Ensure correct item is selected on load
+        // Set the map item as selected by default
         bottomNavigationView.setSelectedItemId(R.id.map);
 
-        // Map initialization
+        // Initialize the map fragment
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
         }
 
-        // Location permission setup
+        // Request location permissions
         locationPermissionRequest = registerForActivityResult(
                 new ActivityResultContracts.RequestMultiplePermissions(), result -> {
                     boolean fineLocationGranted = Boolean.TRUE.equals(result.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false));
                     boolean coarseLocationGranted = Boolean.TRUE.equals(result.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false));
 
                     if (fineLocationGranted || coarseLocationGranted) {
-                        enableMyLocation();
+                        enableMyLocation(); // Enable location services if permissions are granted
                     } else {
                         Toast.makeText(this,
                                 "Location permissions are not granted.",
@@ -99,7 +98,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                     }
                 });
 
-        // Set up FAB to show the welcome popup
+        // Show the welcome popup when the floating action button is clicked
         findViewById(R.id.fab).setOnClickListener(view -> {
             showWelcomePopup();
         });
@@ -124,7 +123,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         Dialog customDialog = new Dialog(this);
         customDialog.setContentView(R.layout.dialog_custom); // Inflate the custom layout
 
-        // Close button functionality
+        // Set the close button functionality
         customDialog.findViewById(R.id.btn_close).setOnClickListener(v -> customDialog.dismiss());
 
         // Show the dialog
@@ -135,17 +134,17 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
 
-        // Set map properties
+        // Customize the map appearance and settings
         mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.map_style));
         mMap.getUiSettings().setZoomControlsEnabled(true);
         mMap.getUiSettings().setCompassEnabled(true);
         mMap.getUiSettings().setMapToolbarEnabled(true);
-        mMap.setPadding(0, 0, 0, 150); // Adjust map content only
+        mMap.setPadding(0, 0, 0, 150); // Set padding to avoid content overlap
 
-        // Load markers from the database
+        // Load map markers from the database
         loadMarkersFromDatabase(this);
 
-        // Retrieve Intent extras
+        // Retrieve intent data for setting a specific map location
         Intent intent = getIntent();
         double lat = intent.getDoubleExtra("lat", 0.0);
         double lng = intent.getDoubleExtra("lng", 0.0);
@@ -154,10 +153,10 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         if (lat != 0.0 && lng != 0.0) {
             LatLng targetLocation = new LatLng(lat, lng);
 
-            // Move camera to the location
+            // Move the camera to the target location
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(targetLocation, zoom));
 
-            // Show info window of the matching marker
+            // Display the info window for the corresponding marker
             mMap.setOnMapLoadedCallback(() -> {
                 for (Marker marker : markersList) {
                     if (marker.getPosition().equals(targetLocation)) {
@@ -177,14 +176,14 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                 Manifest.permission.ACCESS_COARSE_LOCATION
         });
 
-        // Save the last camera position
+        // Save the last camera position when the camera stops moving
         mMap.setOnCameraIdleListener(() -> {
             lastCameraPosition = mMap.getCameraPosition();
             lastSavedPosition = lastCameraPosition;
         });
     }
 
-    // Enable user location
+    // Enable user location on the map
     private void enableMyLocation() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -194,17 +193,17 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.getUiSettings().setMyLocationButtonEnabled(true);
     }
 
-    // load markers using dbhelper into map
+    // Load markers from the database into the map
     private void loadMarkersFromDatabase(Context context) {
         DatabaseHelper dbHelper = new DatabaseHelper(this);
         SQLiteDatabase database = null;
         Cursor cursor = null;
 
         try {
-            // Create/copy the database if needed
+            // Ensure the database is ready
             dbHelper.createDataBase();
 
-            // Get the database
+            // Access the database
             database = dbHelper.getDataBase();
             String query = "SELECT lat, lng, name, category FROM MobCartoDB_table";
             cursor = database.rawQuery(query, null);
@@ -219,9 +218,9 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                     String category = cursor.getString(cursor.getColumnIndexOrThrow("category"));
 
                     LatLng position = new LatLng(lat, lng);
-                    BitmapDescriptor icon = getMarkerIcon(category, context); // Pass the context
+                    BitmapDescriptor icon = getMarkerIcon(category, context); // Create custom marker icon
 
-                    // Add marker and save it in the list
+                    // Add a marker to the map and store it in the list
                     Marker marker = mMap.addMarker(new MarkerOptions()
                             .position(position)
                             .title(name)
@@ -231,7 +230,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
                     boundsBuilder.include(position);
                 } while (cursor.moveToNext());
 
-                // Adjust camera to show all markers
+                // Adjust the map to show all markers
                 LatLngBounds bounds = boundsBuilder.build();
                 mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 100));
             }
@@ -248,7 +247,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-    // get custom icon for markers
+    // Generate a custom icon for markers based on category
     private BitmapDescriptor getMarkerIcon(String category, Context context) {
         int color = getMarkerColor(category, context);
         return BitmapDescriptorFactory.fromBitmap(Objects.requireNonNull(getColoredMarker(context, color)));
@@ -258,7 +257,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         Drawable drawable = ContextCompat.getDrawable(context, R.drawable.marker_black);
 
         if (drawable == null) {
-            // Handle drawable not found (very unlikely for the default marker)
+            // Handle drawable not found (unlikely case)
             return null;
         }
         drawable = DrawableCompat.wrap(drawable).mutate();
@@ -270,7 +269,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         return bitmap;
     }
 
-    // setting custom colors for the markers
+    // Assign custom colors for markers based on their category
     private int getMarkerColor(String category, Context context) {
         switch (category) {
             case "Bar":

@@ -27,7 +27,7 @@ public class ListActivity extends AppCompatActivity {
     static DatabaseHelper dbHelper;
     private double userLat, userLng;
 
-    // New class to hold point data
+    // Inner class to hold point data
     private static class PointData {
         String name;
         String address;
@@ -41,6 +41,7 @@ public class ListActivity extends AppCompatActivity {
         String distanceText;
         String img;
 
+        // Constructor to initialize point data
         PointData(String name, String address, String category, String subCategory,
                   String url, String notes, double lat, double lng, float distance, String distanceText, String img) {
             this.name = name;
@@ -65,20 +66,21 @@ public class ListActivity extends AppCompatActivity {
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.btm_nav);
 
+        // Handle navigation between map and list views
         bottomNavigationView.setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.list_view) {
-                return true;
+                return true; // Already on ListActivity
             } else if (item.getItemId() == R.id.map) {
-                startActivity(new Intent(this, MainActivity.class));
+                startActivity(new Intent(this, MainActivity.class)); // Navigate to MainActivity
                 overridePendingTransition(0, 0);
             }
             return true;
         });
 
-        // setting bottom nav view bubble
+        // Set the selected item in bottom navigation
         bottomNavigationView.setSelectedItemId(R.id.list_view);
 
-
+        // Get the user's location
         FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
@@ -89,15 +91,16 @@ public class ListActivity extends AppCompatActivity {
         fusedLocationClient.getLastLocation()
                 .addOnSuccessListener(this, location -> {
                     if (location != null) {
-                        userLat = location.getLatitude();
-                        userLng = location.getLongitude();
-                        loadListView();
+                        userLat = location.getLatitude(); // Get user's latitude
+                        userLng = location.getLongitude(); // Get user's longitude
+                        loadListView(); // Load the list view after retrieving location
                     }
                 });
 
+        // Initialize the database helper
         dbHelper = new DatabaseHelper(this);
         try {
-            dbHelper.createDataBase();
+            dbHelper.createDataBase(); // Ensure the database is ready to use
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -109,6 +112,7 @@ public class ListActivity extends AppCompatActivity {
         int length = dbCursor.getCount();
         ListView listView = findViewById(R.id.list_view);
 
+        // Hide the list view if there are no records in the database
         if (length == 0) {
             listView.setVisibility(View.GONE);
             return;
@@ -116,7 +120,7 @@ public class ListActivity extends AppCompatActivity {
             listView.setVisibility(View.VISIBLE);
         }
 
-        // Create a list to hold all point data
+        // List to store all point data
         ArrayList<PointData> points = new ArrayList<>();
 
         dbCursor.moveToFirst();
@@ -131,6 +135,7 @@ public class ListActivity extends AppCompatActivity {
             double lng = dbCursor.getDouble(dbCursor.getColumnIndexOrThrow("lng"));
             String img = dbCursor.getString(dbCursor.getColumnIndexOrThrow("img"));
 
+            // Calculate the distance from the user's location to the point's location
             Location pointLocation = new Location("point");
             pointLocation.setLatitude(lat);
             pointLocation.setLongitude(lng);
@@ -144,16 +149,17 @@ public class ListActivity extends AppCompatActivity {
                     Math.round(distance) + " meters" :
                     String.format("%.2f", distance / 1000) + " km";
 
+            // Add the point data to the list
             points.add(new PointData(name, address, category, subCategory, url, notes,
                     lat, lng, distance, distanceText, img));
 
             dbCursor.moveToNext();
         }
 
-        // Sort points by distance
+        // Sort the points by distance from the user
         Collections.sort(points, (p1, p2) -> Float.compare(p1.distance, p2.distance));
 
-        // Create arrays for the adapter
+        // Prepare data for the adapter
         String[] db_names = new String[length];
         String[] db_category = new String[length];
         String[] distances = new String[length];
@@ -164,12 +170,15 @@ public class ListActivity extends AppCompatActivity {
             distances[i] = points.get(i).distanceText;
         }
 
+        // Set the adapter to display the points in the list view
         CustomAdapter adapter = new CustomAdapter(this, db_names, db_category, distances);
         listView.setAdapter(adapter);
 
+        // Set the click listener for the list items
         listView.setOnItemClickListener((AdapterView<?> parent, View view, int position, long id) -> {
             PointData selectedPoint = points.get(position);
 
+            // Navigate to the description activity with the selected point's data
             Intent intent = new Intent(ListActivity.this, PointDescriptionActivity.class);
             intent.putExtra("name", selectedPoint.name);
             intent.putExtra("address", selectedPoint.address);

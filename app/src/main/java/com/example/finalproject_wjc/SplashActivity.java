@@ -1,5 +1,4 @@
-package com.example.finalproject_wjc;  // Ensure this matches the package in your manifest
-
+package com.example.finalproject_wjc;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -11,17 +10,17 @@ public class SplashActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_splash); // Ensure this layout exists
+        setContentView(R.layout.activity_splash); // Set the splash screen layout
 
-        // Delay to simulate splash screen
+        // Use a Handler to create a delay before navigating to MainActivity
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                // Start MainActivity after delay
+                // Create an intent to navigate to MainActivity
                 Intent intent = new Intent(SplashActivity.this, MainActivity.class);
-                startActivity(intent);
-                finish();
+                startActivity(intent); // Start MainActivity
+                finish(); // Close SplashActivity to not go back to it
             }
-        }, 2000);
+        }, 2000); // Duration of the screen
     }
 }

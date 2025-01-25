@@ -15,8 +15,9 @@ public class CustomAdapter extends ArrayAdapter<String> {
     private final String[] category;
     private final String[] distances;
 
+    // Constructor to initialize the adapter with data
     public CustomAdapter(Context context, String[] names, String[] category, String[] distances) {
-        super(context, R.layout.list_item, names);  // Change to list_item
+        super(context, R.layout.list_item, names);  // Use the custom list item layout
         this.context = context;
         this.category = category;
         this.names = names;
@@ -26,19 +27,22 @@ public class CustomAdapter extends ArrayAdapter<String> {
     @NonNull
     @Override
     public View getView(int position, View convertView, @NonNull ViewGroup parent) {
+        // Check if the view can be reused; if not, inflate a new one
         if (convertView == null) {
             LayoutInflater inflater = LayoutInflater.from(context);
-            convertView = inflater.inflate(R.layout.list_item, parent, false);  // Change to list_item
+            convertView = inflater.inflate(R.layout.list_item, parent, false);  // Inflate the custom layout
         }
 
+        // Find and initialize the TextViews from the layout
         TextView nameTextView = convertView.findViewById(R.id.nameTextView);
         TextView categoryTextView = convertView.findViewById(R.id.categoryTextView);
         TextView distanceTextView = convertView.findViewById(R.id.distanceTextView);
 
-        nameTextView.setText(names[position]);
-        categoryTextView.setText(category[position]);
-        distanceTextView.setText(distances[position]);
+        // Set the text for each TextView based on the current position in the list
+        nameTextView.setText(names[position]); // Set the name of the point
+        categoryTextView.setText(category[position]); // Set the category of the point
+        distanceTextView.setText(distances[position]); // Set the distance from the user
 
-        return convertView;
+        return convertView; // Return the fully populated view
     }
 }
