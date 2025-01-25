@@ -2,17 +2,10 @@
 <resources>
     <color name="black">#0F1A10</color>
     <color name="white">#EEF4D4</color>
-    <color name="LightCoral">#E38484</color>
     <color name="Background">#385b3a</color>
-    <color name="yellow">#F3A029</color>
-    <color name="brown">#987E34</color>
     <color name="honeydew">#CCE0CD</color>
-    <color name="celadon">#A6C9A8</color>
     <color name="cambridge">#8DB98F</color>
-    <color name="asparagus">#74AA77</color>
     <color name="Dgreen">#0B5D0E</color>
-    <color name="water">#AABAEE</color>
-    <color name="red">#EE3927</color>
     <color name="gray">#898989</color>
     <color name="linkColor">#1021AD</color>
     <color name="park_color">#9A031E</color>
@@ -22,6 +15,5 @@
     <color name="visit_point_color">#5F0F40</color>
     <color name="landmark_color">#B07C9E</color>
     <color name="default_color">#1C1BCB</color>
-
 
 </resources>
