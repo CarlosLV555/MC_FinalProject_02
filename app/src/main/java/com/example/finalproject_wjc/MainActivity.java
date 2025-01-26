@@ -51,12 +51,16 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     private ActivityResultLauncher<String[]> locationPermissionRequest;
     private final List<Marker> markersList = new ArrayList<>();
     private static CameraPosition lastSavedPosition = null;
+    private DatabaseHelper dbHelper;
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Initialize DatabaseHelper
+        dbHelper = new DatabaseHelper(this);
 
         // Check if this is the first launch
         checkFirstLaunch();
@@ -143,6 +147,54 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
         // Load map markers from the database
         loadMarkersFromDatabase(this);
+
+        // Add info window click listener to navigate to point description
+        mMap.setOnInfoWindowClickListener(marker -> {
+            // Create an intent to navigate to the PointDescriptionActivity
+            Intent descriptionIntent = new Intent(MainActivity.this, PointDescriptionActivity.class);
+
+            // Retrieve the full details for this marker from the database
+            SQLiteDatabase database = null;
+            Cursor cursor = null;
+
+            try {
+                // Ensure the database is ready
+                dbHelper.createDataBase();
+                database = dbHelper.getDataBase();
+
+                String query = "SELECT * FROM MobCartoDB_table WHERE name = ? AND lat = ? AND lng = ?";
+                cursor = database.rawQuery(query, new String[]{
+                        marker.getTitle(),
+                        String.valueOf(marker.getPosition().latitude),
+                        String.valueOf(marker.getPosition().longitude)
+                });
+
+                if (cursor.moveToFirst()) {
+                    // Pass all the extras needed by PointDescriptionActivity
+                    descriptionIntent.putExtra("name", cursor.getString(cursor.getColumnIndexOrThrow("name")));
+                    descriptionIntent.putExtra("address", cursor.getString(cursor.getColumnIndexOrThrow("address")));
+                    descriptionIntent.putExtra("url", cursor.getString(cursor.getColumnIndexOrThrow("url")));
+                    descriptionIntent.putExtra("notes", cursor.getString(cursor.getColumnIndexOrThrow("notes")));
+                    descriptionIntent.putExtra("img", cursor.getString(cursor.getColumnIndexOrThrow("img")));
+                    descriptionIntent.putExtra("lat", marker.getPosition().latitude);
+                    descriptionIntent.putExtra("lng", marker.getPosition().longitude);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                Toast.makeText(this, "Error retrieving location details", Toast.LENGTH_SHORT).show();
+            } finally {
+                // Close cursor and database
+                if (cursor != null && !cursor.isClosed()) {
+                    cursor.close();
+                }
+                if (database != null && database.isOpen()) {
+                    database.close();
+                }
+            }
+
+            // Start the description activity
+            startActivity(descriptionIntent);
+        });
 
         // Retrieve intent data for setting a specific map location
         Intent intent = getIntent();

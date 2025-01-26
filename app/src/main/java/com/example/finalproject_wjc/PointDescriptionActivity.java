@@ -76,9 +76,10 @@ public class PointDescriptionActivity extends AppCompatActivity {
             }
         });
 
-        // Button to return to the previous screen
         btnBack.setOnClickListener(view -> {
-            finish(); // End the current activity and go back
+            Intent listIntent = new Intent(PointDescriptionActivity.this, ListActivity.class);
+            startActivity(listIntent);
+            finish(); // End the current activity
         });
     }
 }
